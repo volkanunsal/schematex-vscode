@@ -1,18 +1,31 @@
-# SchemaTex Diagrams for VS Code
+<p align="center">
+  <img src="media/logo.png" alt="SchemaTex Diagrams logo" width="128" height="128">
+</p>
 
-Renders [SchemaTex](https://github.com/SchemaTex/SchemaTex) diagrams inline in the Markdown preview.
+<h1 align="center">SchemaTex Diagrams</h1>
 
-## Usage
+<p align="center">Render SchemaTex diagrams inline in the VS Code Markdown preview.</p>
 
-Add a fenced code block with the `schematex` language tag:
+<p align="center">
+  <img alt="License" src="https://img.shields.io/badge/license-AGPL--3.0--only-blue">
+  <!-- Placeholder: <publisher> will be replaced with the real Marketplace publisher id once the extension is published. -->
+  <img alt="VS Code Marketplace" src="https://img.shields.io/visual-studio-marketplace/v/%3Cpublisher%3E.schematex-vscode?label=VS%20Code%20Marketplace">
+</p>
 
+## How to use
+
+Add a fenced code block with the `schematex` language tag to render a diagram inline in the Markdown preview:
+
+````markdown
 ```schematex
 Genogram
   Alice -- Bob
 ```
+````
 
-Optionally prefix the DSL body with a `---`-delimited config header:
+Optionally prefix the diagram body with a `---`-delimited config header to control rendering:
 
+````markdown
 ```schematex
 ---
 theme: dark
@@ -21,8 +34,32 @@ fontFamily: Georgia
 Genogram
   Alice -- Bob
 ```
+````
 
-Supported config keys: `theme`, `fontFamily`, `width`, `height`, `padding`, `scene`.
+See [Configuration reference](#configuration-reference) below for the full list of supported keys.
+
+## Explanation
+
+### What is SchemaTex
+
+[SchemaTex](https://github.com/SchemaTex/SchemaTex) is a text-based DSL for describing diagrams — genograms, flowcharts, and similar node-and-edge structures — as plain text, then rendering them as SVG. This extension wires SchemaTex into VS Code's built-in Markdown preview via a `markdown-it` plugin, so a ` ```schematex ` fenced code block renders as a diagram instead of a plain code block whenever you open the Markdown preview.
+
+### Licensing
+
+SchemaTex is licensed AGPL-3.0. This extension bundles the `schematex` package directly (it is not an optional peer dependency), so the AGPL-3.0's copyleft terms extend to the extension as a whole. As a result, this extension is licensed AGPL-3.0-only rather than a more permissive license.
+
+## Configuration reference
+
+Config keys go in the optional `---`-delimited header at the top of a `schematex` fenced code block, before the diagram body.
+
+| Key          | Type   | Description                                  |
+| ------------ | ------ | --------------------------------------------- |
+| `theme`      | string | Diagram color theme (e.g. `dark`, `light`).   |
+| `fontFamily` | string | Font family used for diagram text.            |
+| `width`      | number | Rendered diagram width, in pixels.            |
+| `height`     | number | Rendered diagram height, in pixels.           |
+| `padding`    | number | Padding around the diagram content, in pixels.|
+| `scene`      | string | Diagram type (e.g. `Genogram`).               |
 
 ## License
 
