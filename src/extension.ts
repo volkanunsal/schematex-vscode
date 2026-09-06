@@ -1,9 +1,10 @@
-import type MarkdownIt from "markdown-it";
 import * as vscode from "vscode";
+import { schematexPlugin } from "./markdownItPlugin";
 
 export function activate(_context: vscode.ExtensionContext) {
   return {
-    extendMarkdownIt(markdownItInstance: MarkdownIt): MarkdownIt {
+    extendMarkdownIt(markdownItInstance: any): any {
+      schematexPlugin(markdownItInstance);
       return markdownItInstance;
     },
   };
