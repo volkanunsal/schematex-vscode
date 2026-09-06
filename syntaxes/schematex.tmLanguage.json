@@ -1,0 +1,115 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "SchemaTex",
+  "scopeName": "source.schematex",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#config-header" },
+    { "include": "#diagram-type-keyword" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#operators" },
+    { "include": "#brackets" },
+    { "include": "#attribute-key" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.schematex",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.line.double-slash.schematex",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.line.percentage.schematex",
+          "match": "%%.*$"
+        }
+      ]
+    },
+    "config-header": {
+      "begin": "^\\s*(---)\\s*$",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.block.schematex" }
+      },
+      "end": "^\\s*(---)\\s*$",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.block.schematex" }
+      },
+      "name": "meta.embedded.block.config-header.schematex",
+      "patterns": [
+        {
+          "match": "^\\s*([A-Za-z_][A-Za-z0-9_-]*)\\s*(:)",
+          "captures": {
+            "1": { "name": "entity.name.tag.config-key.schematex" },
+            "2": { "name": "punctuation.separator.key-value.schematex" }
+          }
+        },
+        { "include": "#strings" },
+        { "include": "#numbers" }
+      ]
+    },
+    "diagram-type-keyword": {
+      "match": "^\\s*(block|blockdiagram|bowtie|bpmn|breadboard|causalloop|circuit|comparison|decisiontree|ecomap|entity|epc|erd|evacuation|eventtree|faulttree|fishbone|floorplan|flowchart|fmea|fbd|genogram|gitgraph|idef0|ladder|logic|markov|matrix|mindmap|network|orgchart|pid|pedigree|pert|petri|phylo|prisma|rbd|sfc|sld|siteplan|sociogram|playbook|stageplot|state|threatmodel|timeline|timing|umlclass|sequence|usecase|venn|welding)\\b",
+      "captures": {
+        "1": { "name": "keyword.control.diagram-type.schematex" }
+      }
+    },
+    "strings": {
+      "name": "string.quoted.double.schematex",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.schematex",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "numbers": {
+      "name": "constant.numeric.schematex",
+      "match": "\\b\\d+(\\.\\d+)?\\b"
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.relationship.schematex",
+          "match": "(-x-|-\\/\\/|-\\/-|-o-|==|~\\/~|~|--|->>|-->|->\\+|\\+->|->|-x\\b|o->)"
+        },
+        {
+          "name": "keyword.other.qualifier.schematex",
+          "match": "\\b(index|male|female|unknown|other|deceased|stillborn|miscarriage|abortion|PK|FK|UK|NN)\\b"
+        }
+      ]
+    },
+    "brackets": {
+      "patterns": [
+        {
+          "name": "punctuation.definition.attributes.begin.schematex",
+          "match": "\\["
+        },
+        {
+          "name": "punctuation.definition.attributes.end.schematex",
+          "match": "\\]"
+        },
+        {
+          "name": "punctuation.definition.block.begin.schematex",
+          "match": "\\{"
+        },
+        {
+          "name": "punctuation.definition.block.end.schematex",
+          "match": "\\}"
+        }
+      ]
+    },
+    "attribute-key": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_-]*)\\s*(:)(?!:)",
+      "captures": {
+        "1": { "name": "variable.parameter.schematex" },
+        "2": { "name": "punctuation.separator.key-value.schematex" }
+      }
+    }
+  }
+}

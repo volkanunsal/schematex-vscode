@@ -29,6 +29,24 @@
     ],
     "markdown.previewStyles": [
       "./media/previewStyles.css"
+    ],
+    "languages": [
+      {
+        "id": "schematex",
+        "aliases": [
+          "SchemaTex"
+        ],
+        "extensions": [
+          ".stx"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "schematex",
+        "scopeName": "source.schematex",
+        "path": "./syntaxes/schematex.tmLanguage.json"
+      }
     ]
   },
   "scripts": {

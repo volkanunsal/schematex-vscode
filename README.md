@@ -37,6 +37,8 @@ Genogram
 
 See [Configuration reference](#configuration-reference) below for the full list of supported keys.
 
+The DSL inside a `schematex` fence gets syntax highlighting while editing (comments, strings, numbers, diagram-type keywords, relationship operators, and attribute/config keys).
+
 Hover over a rendered diagram to reveal a small ⚙ button in the top-right corner; click it to open a menu with "Export PNG" and "Export PDF" options, for saving the diagram as an image or a print-ready PDF.
 
 ## Explanation
