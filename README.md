@@ -8,8 +8,7 @@
 
 <p align="center">
   <img alt="License" src="https://img.shields.io/badge/license-AGPL--3.0--only-blue">
-  <!-- Placeholder: <publisher> will be replaced with the real Marketplace publisher id once the extension is published. -->
-  <img alt="VS Code Marketplace" src="https://img.shields.io/visual-studio-marketplace/v/%3Cpublisher%3E.schematex-vscode?label=VS%20Code%20Marketplace">
+  <img alt="VS Code Marketplace" src="https://img.shields.io/visual-studio-marketplace/v/VolkanUnsal.schematex-vscode?label=VS%20Code%20Marketplace">
 </p>
 
 ## How to use

@@ -1,0 +1,10 @@
+node_modules/**
+src/**
+test/**
+docs/**
+.vscode/**
+.superpowers/**
+**/*.map
+tsconfig.json
+esbuild.config.js
+pnpm-lock.yaml
