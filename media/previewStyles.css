@@ -32,17 +32,16 @@
   cursor: pointer;
 }
 
-.schematex-diagram:hover .schematex-export-toggle,
-.schematex-export-toggle[aria-expanded="true"] {
+.schematex-diagram:hover .schematex-export-toggle {
   opacity: 1;
   visibility: visible;
 }
 
 .schematex-export-menu {
+  display: none;
   position: absolute;
   top: calc(100% + 0.25em);
   right: 0;
-  display: flex;
   flex-direction: column;
   min-width: 8em;
   border: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
@@ -50,6 +49,10 @@
   background: var(--vscode-editor-background, #fff);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+}
+
+.schematex-export-toggle-wrap:hover .schematex-export-menu {
+  display: flex;
 }
 
 .schematex-export-item {
