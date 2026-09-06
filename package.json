@@ -20,7 +20,7 @@
     "build": "node esbuild.config.js",
     "watch": "node esbuild.config.js --watch",
     "compile": "pnpm run typecheck && pnpm run build",
-    "test": "node --test --import tsx test/",
+    "test": "node --test --import tsx test/*.test.ts",
     "vscode:prepublish": "pnpm run compile"
   },
   "dependencies": {
