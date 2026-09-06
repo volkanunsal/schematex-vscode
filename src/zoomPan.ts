@@ -12,54 +12,17 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-function getNaturalSize(
-  svg: SVGElement,
-): { width: number; height: number } | null {
-  const width = Number.parseFloat(svg.getAttribute("width") ?? "");
-  const height = Number.parseFloat(svg.getAttribute("height") ?? "");
-  if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
-    return { width, height };
-  }
-
-  const viewBoxAttr = svg.getAttribute("viewBox");
-  if (viewBoxAttr) {
-    const parts = viewBoxAttr.trim().split(/[\s,]+/).map(Number);
-    if (
-      parts.length === 4 &&
-      parts.every((value) => Number.isFinite(value)) &&
-      parts[2] > 0 &&
-      parts[3] > 0
-    ) {
-      return { width: parts[2], height: parts[3] };
-    }
-  }
-
-  return null;
-}
-
-function computeFitState(
-  svg: SVGElement,
-  viewport: HTMLElement,
-): ZoomPanState {
-  const naturalSize = getNaturalSize(svg);
-  const rect = viewport.getBoundingClientRect();
-  if (!naturalSize || rect.width <= 0 || rect.height <= 0) {
-    return { scale: 1, translateX: 0, translateY: 0 };
-  }
-
-  const fitScale = Math.min(
-    rect.width / naturalSize.width,
-    rect.height / naturalSize.height,
-    1,
-  );
-  const scaledWidth = naturalSize.width * fitScale;
-  const scaledHeight = naturalSize.height * fitScale;
-  return {
-    scale: fitScale,
-    translateX: Math.max(0, (rect.width - scaledWidth) / 2),
-    translateY: Math.max(0, (rect.height - scaledHeight) / 2),
-  };
-}
+// The initial view is always scale 1, translate (0, 0) -- not a fit-to-view
+// computation. An earlier version tried to auto-shrink to fit both width
+// AND height, which crushed tall-but-narrow diagrams (sequential
+// flowcharts, some mindmaps) down to a fraction of a readable size just to
+// satisfy a height cap. Width already gets handled for free by this
+// extension's existing `max-width: 100%; height: auto` CSS on the SVG
+// (unaffected by the scale(1) transform, since transform doesn't change
+// the layout box); tall diagrams are left to extend the page's natural
+// height, same as before zoom/pan existed. Zooming beyond that is an
+// explicit user action (buttons or ctrl/cmd+scroll), never automatic.
+const INITIAL_STATE: ZoomPanState = { scale: 1, translateX: 0, translateY: 0 };
 
 function isPanModifierPressed(event: MouseEvent): boolean {
   return event.metaKey || event.ctrlKey;
@@ -71,17 +34,22 @@ export function attachZoomPan(
   svg: SVGElement,
 ): void {
   const ownerDocument = diagramElement.ownerDocument;
-  const initialState = computeFitState(svg, viewport);
-  const state: ZoomPanState = { ...initialState };
+  const state: ZoomPanState = { ...INITIAL_STATE };
 
   function applyTransform(): void {
     svg.style.transformOrigin = "0 0";
     svg.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
   }
 
-  function updateIdleCursor(event?: MouseEvent): void {
+  function setTextSelectable(selectable: boolean): void {
+    viewport.style.userSelect = selectable ? "" : "none";
+    viewport.style.setProperty("-webkit-user-select", selectable ? "" : "none");
+  }
+
+  function updatePointerAffordance(event?: MouseEvent): void {
     const canPan = state.scale > 1 || (event ? isPanModifierPressed(event) : false);
     viewport.style.cursor = canPan ? "grab" : "default";
+    setTextSelectable(!canPan);
   }
 
   function zoomAt(anchorX: number, anchorY: number, factor: number): void {
@@ -102,9 +70,9 @@ export function attachZoomPan(
   }
 
   function reset(): void {
-    state.scale = initialState.scale;
-    state.translateX = initialState.translateX;
-    state.translateY = initialState.translateY;
+    state.scale = INITIAL_STATE.scale;
+    state.translateX = INITIAL_STATE.translateX;
+    state.translateY = INITIAL_STATE.translateY;
     applyTransform();
   }
 
@@ -172,11 +140,12 @@ export function attachZoomPan(
     dragStartTranslateY = state.translateY;
     viewport.classList.add("schematex-zoom-dragging");
     viewport.style.cursor = "grabbing";
+    setTextSelectable(false);
   });
 
   viewport.addEventListener("mousemove", (event: MouseEvent) => {
     if (!dragging) {
-      updateIdleCursor(event);
+      updatePointerAffordance(event);
     }
   });
 
@@ -195,9 +164,9 @@ export function attachZoomPan(
     }
     dragging = false;
     viewport.classList.remove("schematex-zoom-dragging");
-    updateIdleCursor(event);
+    updatePointerAffordance(event);
   });
 
   applyTransform();
-  updateIdleCursor();
+  updatePointerAffordance();
 }

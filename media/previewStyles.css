@@ -11,7 +11,6 @@
 
 .schematex-zoom-viewport {
   overflow: hidden;
-  max-height: 70vh;
 }
 
 .schematex-zoom-viewport svg {

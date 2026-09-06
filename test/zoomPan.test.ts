@@ -209,51 +209,38 @@ test("dragging pans only once zoomed in past scale 1; no-op at scale 1", () => {
   assert.equal(viewport.classList.contains("schematex-zoom-dragging"), false);
 });
 
-test("initial scale fits an oversized diagram entirely within the viewport, centered", () => {
-  // Viewport is 200x100; SVG is natively 400x100 (twice as wide as the
-  // viewport) -- the whole diagram must be visible by default, not clipped
-  // at scale 1.
+test("initial scale is always 1, regardless of the diagram's natural size (no auto-fit)", () => {
+  // A tall-and-narrow diagram (e.g. a sequential flowchart) must NOT be
+  // auto-shrunk to fit the viewport height -- that was the bug: it made
+  // such diagrams start far too zoomed out. Width is left to the existing
+  // `max-width: 100%; height: auto` CSS on the SVG, not JS.
   const { diagramElement, viewport, svg } = makeViewport(200, 100, {
-    width: 400,
-    height: 100,
+    width: 60,
+    height: 900,
   });
   attachZoomPan(diagramElement, viewport, svg);
 
-  assert.equal(currentScale(svg), 0.5);
-  // Fit-to-width leaves no horizontal slack (translateX 0) and centers
-  // vertically (scaled height 50 inside a 100-tall viewport -> 25px each side).
-  assert.equal(svg.style.transform, "translate(0px, 25px) scale(0.5)");
+  assert.equal(svg.style.transform, "translate(0px, 0px) scale(1)");
 });
 
-test("initial scale stays at 1 (no upscaling) when the diagram already fits", () => {
-  const { diagramElement, viewport, svg } = makeViewport(200, 100, {
-    width: 100,
-    height: 50,
-  });
-  attachZoomPan(diagramElement, viewport, svg);
-
-  assert.equal(currentScale(svg), 1);
-});
-
-test("reset returns to the fit-to-view baseline, not always scale 1", () => {
+test("reset always returns to scale 1, translate 0,0", () => {
   const { diagramElement, viewport, svg, window } = makeViewport(200, 100, {
-    width: 400,
-    height: 100,
+    width: 60,
+    height: 900,
   });
   attachZoomPan(diagramElement, viewport, svg);
-  const fitTransform = svg.style.transform;
 
   const zoomInButton = diagramElement.querySelector(
     ".schematex-zoom-in",
   ) as HTMLElement;
   zoomInButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-  assert.notEqual(svg.style.transform, fitTransform);
+  assert.notEqual(svg.style.transform, "translate(0px, 0px) scale(1)");
 
   const resetButton = diagramElement.querySelector(
     ".schematex-zoom-reset",
   ) as HTMLElement;
   resetButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-  assert.equal(svg.style.transform, fitTransform);
+  assert.equal(svg.style.transform, "translate(0px, 0px) scale(1)");
 });
 
 test("Ctrl/Cmd+drag pans even at scale 1, unlike a plain drag", () => {
@@ -340,4 +327,56 @@ test("cursor is grabbing while actively dragging, and reverts to grab on mouseup
     new window.MouseEvent("mouseup", { metaKey: true, bubbles: true }),
   );
   assert.equal(viewport.style.cursor, "grab");
+});
+
+test("text becomes unselectable while the pan modifier is held, and selectable again once released", () => {
+  const { diagramElement, viewport, svg, window } = makeViewport();
+  attachZoomPan(diagramElement, viewport, svg);
+
+  assert.equal(viewport.style.userSelect, "");
+
+  viewport.dispatchEvent(
+    new window.MouseEvent("mousemove", {
+      clientX: 5,
+      clientY: 5,
+      ctrlKey: true,
+      bubbles: true,
+    }),
+  );
+  assert.equal(viewport.style.userSelect, "none");
+
+  viewport.dispatchEvent(
+    new window.MouseEvent("mousemove", { clientX: 6, clientY: 6, bubbles: true }),
+  );
+  assert.equal(viewport.style.userSelect, "");
+});
+
+test("text stays unselectable throughout a zoomed-in plain drag, and while still zoomed in afterward (plain drag-to-pan remains available, same as the grab cursor)", () => {
+  const { diagramElement, viewport, svg, document, window } = makeViewport();
+  attachZoomPan(diagramElement, viewport, svg);
+
+  const zoomInButton = diagramElement.querySelector(
+    ".schematex-zoom-in",
+  ) as HTMLElement;
+  zoomInButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+
+  viewport.dispatchEvent(
+    new window.MouseEvent("mousedown", { clientX: 0, clientY: 0, bubbles: true }),
+  );
+  assert.equal(viewport.style.userSelect, "none");
+
+  document.dispatchEvent(new window.MouseEvent("mouseup", { bubbles: true }));
+  // Still zoomed in -> plain drag-to-pan is still available, so selection
+  // stays disabled, mirroring the cursor staying "grab" (not "default").
+  assert.equal(viewport.style.userSelect, "none");
+  assert.equal(viewport.style.cursor, "grab");
+
+  const resetButton = diagramElement.querySelector(
+    ".schematex-zoom-reset",
+  ) as HTMLElement;
+  resetButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  viewport.dispatchEvent(
+    new window.MouseEvent("mousemove", { clientX: 1, clientY: 1, bubbles: true }),
+  );
+  assert.equal(viewport.style.userSelect, "");
 });
