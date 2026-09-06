@@ -21,6 +21,19 @@ function decodeBase64Attribute(
   return atob(encodedValue);
 }
 
+function showErrorCard(element: HTMLElement, message: string): void {
+  const ownerDocument = element.ownerDocument;
+  const errorCard = ownerDocument.createElement("div");
+  errorCard.className = "schematex-error";
+  errorCard.textContent = `SchemaTex error: ${message}`;
+  element.innerHTML = "";
+  element.append(errorCard);
+}
+
+function messageFromError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export function createRenderer(deps: RendererDeps): {
   renderAll(root: ParentNode): void;
   renderOne(element: HTMLElement): void;
@@ -41,19 +54,33 @@ export function createRenderer(deps: RendererDeps): {
     const exportPngButton = ownerDocument.createElement("button");
     exportPngButton.textContent = "Export PNG";
     exportPngButton.addEventListener("click", async () => {
-      const svgMarkup = deps.renderPreview(source, config);
-      const pngBlob = await deps.svgToPngBlob(svgMarkup, {
-        scale: 2,
-        background: "white",
-      });
-      deps.downloadBlob(pngBlob, "diagram.png");
+      try {
+        const svgMarkup = deps.renderPreview(source, {
+          ...config,
+          mode: "preview",
+        });
+        const pngBlob = await deps.svgToPngBlob(svgMarkup, {
+          scale: 2,
+          background: "white",
+        });
+        deps.downloadBlob(pngBlob, "diagram.png");
+      } catch (exportError) {
+        showErrorCard(element, messageFromError(exportError));
+      }
     });
 
     const exportPdfButton = ownerDocument.createElement("button");
     exportPdfButton.textContent = "Export PDF";
     exportPdfButton.addEventListener("click", () => {
-      const svgMarkup = deps.renderPreview(source, config);
-      deps.printSvgAsPdf(svgMarkup, "SchemaTex diagram");
+      try {
+        const svgMarkup = deps.renderPreview(source, {
+          ...config,
+          mode: "preview",
+        });
+        deps.printSvgAsPdf(svgMarkup, "SchemaTex diagram");
+      } catch (exportError) {
+        showErrorCard(element, messageFromError(exportError));
+      }
     });
 
     exportBar.append(exportPngButton, exportPdfButton);
@@ -74,11 +101,7 @@ export function createRenderer(deps: RendererDeps): {
       });
       attachExportButtons(element, source, config);
     } catch (renderError) {
-      const message =
-        renderError instanceof Error
-          ? renderError.message
-          : String(renderError);
-      element.innerHTML = `<div class="schematex-error">SchemaTex error: ${message}</div>`;
+      showErrorCard(element, messageFromError(renderError));
     } finally {
       element.setAttribute("data-rendered", "true");
     }

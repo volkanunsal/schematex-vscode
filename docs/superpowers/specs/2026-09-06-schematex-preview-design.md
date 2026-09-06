@@ -55,6 +55,8 @@ Live updates come for free: VS Code's built-in Markdown preview already re-runs 
 - The preview script uses SchemaTex's built-in Canvas-based PNG (@2×) export and PDF printing, sends the resulting binary/data-URL back via `postMessage`.
 - The extension host receives it, prompts via `vscode.window.showSaveDialog`, and writes the file via `workspace.fs.writeFile`.
 
+**Implementation deviation:** the shipped implementation does not use `schematex.exportPng`/`schematex.exportPdf` commands or `postMessage` at all. Instead, `src/renderer.ts` injects an "Export PNG"/"Export PDF" button bar directly into each rendered diagram's DOM, and the click handlers call `schematex/export`'s `svgToPngBlob`/`downloadBlob`/`printSvgAsPdf` directly inside the webview. This avoids a host↔webview round-trip (no command registration, no message-passing protocol to keep in sync, no need to identify which diagram an export command applies to) and keeps export entirely within the already-tested `createRenderer` module. This was the better design and was adopted during implementation but never recorded as a deviation from this spec until the final-review fix pass.
+
 ## Data flow
 
 ```
@@ -79,6 +81,8 @@ user edits fence contents
 - Malformed config header lines: ignored with a warning logged to the webview console, not a hard failure — the diagram still attempts to render with default options.
 - Malformed SchemaTex DSL: caught at `renderToContainer()` call site, shown as an inline error card scoped to that diagram only.
 - Export failure (e.g. user cancels save dialog): no-op, no error dialog needed for a user-initiated cancel; genuine failures show `vscode.window.showErrorMessage`.
+
+**Clarification (added during the final-review fix pass):** invalid SchemaTex DSL is actually handled by schematex's own `mode: "preview"` diagnostic fallback — in preview mode, schematex returns a diagnostic SVG instead of throwing, so it never reaches `renderOne`'s catch block. This extension's `.schematex-error` catch/error-card path only fires for decode-time failures — malformed base64 or malformed JSON in the placeholder `<div>`'s `data-source`/`data-config` attributes.
 
 ## Testing
 

@@ -37,6 +37,8 @@ Genogram
 
 See [Configuration reference](#configuration-reference) below for the full list of supported keys.
 
+Each rendered diagram has "Export PNG" and "Export PDF" buttons above it, for saving the diagram as an image or a print-ready PDF.
+
 ## Explanation
 
 ### What is SchemaTex
@@ -58,7 +60,7 @@ Config keys go in the optional `---`-delimited header at the top of a `schematex
 | `width`      | number | Rendered diagram width, in pixels.            |
 | `height`     | number | Rendered diagram height, in pixels.           |
 | `padding`    | number | Padding around the diagram content, in pixels.|
-| `scene`      | string | Diagram type (e.g. `Genogram`).               |
+| `scene`      | boolean | Opt in to derived geometry/source metadata and `data-sx-*` SVG hooks on the rendered diagram. |
 
 ## License
 
