@@ -61,6 +61,7 @@ Config keys go in the optional `---`-delimited header at the top of a `schematex
 | `height`     | number | Rendered diagram height, in pixels.           |
 | `padding`    | number | Padding around the diagram content, in pixels.|
 | `scene`      | boolean | Opt in to derived geometry/source metadata and `data-sx-*` SVG hooks on the rendered diagram. |
+| `backgroundColor` | string | Background color behind the diagram (e.g. `#f5f5f5`, `transparent`). Applied as the preview container's background, and used as the fill when exporting to PNG (falls back to white if unset). Not a SchemaTex option — handled entirely by this extension. |
 
 ## License
 

@@ -29,6 +29,12 @@ test("coerces scene to a boolean", () => {
   assert.deepEqual(config, { scene: true });
 });
 
+test("parses backgroundColor as a string", () => {
+  const raw = "---\nbackgroundColor: #f5f5f5\n---\nGenogram\n";
+  const { config } = parseConfigHeader(raw);
+  assert.deepEqual(config, { backgroundColor: "#f5f5f5" });
+});
+
 test("treats an unterminated config header as no header at all", () => {
   const raw = "---\ntheme: dark\nGenogram\n  Alice -- Bob\n";
   const { config, body } = parseConfigHeader(raw);

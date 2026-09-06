@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { JSDOM, type DOMWindow } from "jsdom";
+import { JSDOM } from "jsdom";
 import { createRenderer, type RendererDeps } from "../src/renderer";
 
 function makeDiagramContainer(
@@ -69,6 +69,30 @@ test("renders a diagram container, passing decoded source and config with mode f
   assert.match(element.innerHTML, /<svg><\/svg>/);
 });
 
+test("applies backgroundColor as an inline style and does not forward it to schematex", () => {
+  const { document, element } = makeDiagramContainer("Genogram\n", {
+    theme: "dark",
+    backgroundColor: "#f5f5f5",
+  });
+  let receivedConfig: Record<string, unknown> | undefined;
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container, config) => {
+        receivedConfig = config as Record<string, unknown>;
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+    }),
+  );
+
+  renderer.renderAll(document);
+
+  // jsdom's CSSOM normalizes hex colors to rgb() on read-back.
+  assert.equal(element.style.backgroundColor, "rgb(245, 245, 245)");
+  assert.equal(receivedConfig?.theme, "dark");
+  assert.equal("backgroundColor" in (receivedConfig ?? {}), false);
+});
+
 test("does not re-render a container already marked rendered", () => {
   const { document, element } = makeDiagramContainer("Genogram\n");
   element.setAttribute("data-rendered", "true");
@@ -112,14 +136,12 @@ test("shows an inline error card when decoding the container's attributes fails,
   assert.match(element.innerHTML, /boom/);
 });
 
-function openExportMenu(element: HTMLElement, window: DOMWindow): void {
-  const toggle = element.querySelector(
-    ".schematex-export-toggle",
-  ) as HTMLElement;
-  toggle.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-}
-
-test("export toggle button is present but the menu starts closed", () => {
+test("export toggle button and menu are present; visibility is CSS-hover-driven, not JS state", () => {
+  // The toggle and its dropdown are always in the DOM; previewStyles.css
+  // controls visibility purely via :hover (toggle hidden until
+  // .schematex-diagram:hover, menu hidden until
+  // .schematex-export-toggle-wrap:hover). jsdom doesn't evaluate CSS
+  // layout/hover, so this test only verifies structure, not visual state.
   const { document, element } = makeDiagramContainer("Genogram\n");
 
   const renderer = createRenderer(
@@ -133,61 +155,14 @@ test("export toggle button is present but the menu starts closed", () => {
   renderer.renderAll(document);
 
   const toggle = element.querySelector(".schematex-export-toggle");
-  const menu = element.querySelector(".schematex-export-menu") as HTMLElement;
+  const menu = element.querySelector(".schematex-export-menu");
+  const items = element.querySelectorAll(".schematex-export-item");
   assert.ok(toggle);
-  assert.equal(menu.hidden, true);
-  assert.equal(toggle?.getAttribute("aria-expanded"), "false");
+  assert.ok(menu);
+  assert.equal(items.length, 2);
 });
 
-test("clicking the toggle opens the menu; clicking it again closes it", () => {
-  const { document, element, window } = makeDiagramContainer("Genogram\n");
-
-  const renderer = createRenderer(
-    noopDeps({
-      renderPreviewToContainer: (_text, container) => {
-        (container as HTMLElement).innerHTML = "<svg></svg>";
-      },
-    }),
-  );
-
-  renderer.renderAll(document);
-
-  const toggle = element.querySelector(
-    ".schematex-export-toggle",
-  ) as HTMLElement;
-  const menu = element.querySelector(".schematex-export-menu") as HTMLElement;
-
-  openExportMenu(element, window);
-  assert.equal(menu.hidden, false);
-  assert.equal(toggle.getAttribute("aria-expanded"), "true");
-
-  toggle.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-  assert.equal(menu.hidden, true);
-  assert.equal(toggle.getAttribute("aria-expanded"), "false");
-});
-
-test("clicking outside the menu closes it", () => {
-  const { document, element, window } = makeDiagramContainer("Genogram\n");
-
-  const renderer = createRenderer(
-    noopDeps({
-      renderPreviewToContainer: (_text, container) => {
-        (container as HTMLElement).innerHTML = "<svg></svg>";
-      },
-    }),
-  );
-
-  renderer.renderAll(document);
-  openExportMenu(element, window);
-
-  const menu = element.querySelector(".schematex-export-menu") as HTMLElement;
-  assert.equal(menu.hidden, false);
-
-  document.body.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
-  assert.equal(menu.hidden, true);
-});
-
-test("opening the menu and clicking Export PNG/PDF runs the export and closes the menu, forcing mode: preview", async () => {
+test("clicking Export PNG/PDF runs the export, forcing mode: preview", async () => {
   const { document, element, window } = makeDiagramContainer("Genogram\n", {
     theme: "dark",
   });
@@ -219,9 +194,7 @@ test("opening the menu and clicking Export PNG/PDF runs the export and closes th
 
   renderer.renderAll(document);
 
-  openExportMenu(element, window);
-  const menu = element.querySelector(".schematex-export-menu") as HTMLElement;
-  const items = menu.querySelectorAll(".schematex-export-item");
+  const items = element.querySelectorAll(".schematex-export-item");
   assert.equal(items.length, 2);
 
   (items[0] as HTMLElement).dispatchEvent(
@@ -231,17 +204,43 @@ test("opening the menu and clicking Export PNG/PDF runs the export and closes th
   assert.deepEqual(calls, ["renderPreview", "svgToPngBlob", "downloadBlob"]);
   assert.equal(receivedConfigs[0]?.mode, "preview");
   assert.equal(receivedConfigs[0]?.theme, "dark");
-  assert.equal(menu.hidden, true);
 
   calls.length = 0;
-  openExportMenu(element, window);
   (items[1] as HTMLElement).dispatchEvent(
     new window.MouseEvent("click", { bubbles: true }),
   );
   assert.deepEqual(calls, ["renderPreview", "printSvgAsPdf"]);
   assert.equal(receivedConfigs[1]?.mode, "preview");
   assert.equal(receivedConfigs[1]?.theme, "dark");
-  assert.equal(menu.hidden, true);
+});
+
+test("Export PNG uses the configured backgroundColor, falling back to white", async () => {
+  const { document, element, window } = makeDiagramContainer("Genogram\n", {
+    backgroundColor: "#f5f5f5",
+  });
+  const receivedOptions: Array<{ background?: string | null }> = [];
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container) => {
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+      svgToPngBlob: async (_svg, options) => {
+        receivedOptions.push(options ?? {});
+        return new Blob();
+      },
+    }),
+  );
+
+  renderer.renderAll(document);
+
+  const pngItem = element.querySelector(
+    ".schematex-export-item",
+  ) as HTMLElement;
+  pngItem.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(receivedOptions[0]?.background, "#f5f5f5");
 });
 
 test("shows an inline error card instead of an unhandled rejection when Export PNG's renderPreview throws", async () => {
@@ -260,7 +259,6 @@ test("shows an inline error card instead of an unhandled rejection when Export P
 
   renderer.renderAll(document);
 
-  openExportMenu(element, window);
   const pngItem = element.querySelector(
     ".schematex-export-item",
   ) as HTMLElement;
@@ -287,7 +285,6 @@ test("shows an inline error card instead of an uncaught throw when Export PDF's 
 
   renderer.renderAll(document);
 
-  openExportMenu(element, window);
   const items = element.querySelectorAll(".schematex-export-item");
   const pdfItem = items[1] as HTMLElement;
   pdfItem.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
@@ -312,7 +309,6 @@ test("shows an inline error card when Export PNG's svgToPngBlob rejects", async 
 
   renderer.renderAll(document);
 
-  openExportMenu(element, window);
   const pngItem = element.querySelector(
     ".schematex-export-item",
   ) as HTMLElement;

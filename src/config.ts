@@ -5,6 +5,7 @@ export interface SchematexConfig {
   height?: number;
   padding?: number;
   scene?: boolean;
+  backgroundColor?: string;
 }
 
 const numericKeys = new Set(["width", "height", "padding"]);
@@ -16,6 +17,7 @@ const allowedKeys = new Set([
   "height",
   "padding",
   "scene",
+  "backgroundColor",
 ]);
 
 export function parseConfigHeader(raw: string): {

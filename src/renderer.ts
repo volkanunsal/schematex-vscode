@@ -34,6 +34,17 @@ function messageFromError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+function splitBackgroundColor(config: Record<string, unknown>): {
+  backgroundColor: string | undefined;
+  schematexConfig: Record<string, unknown>;
+} {
+  const { backgroundColor, ...schematexConfig } = config;
+  return {
+    backgroundColor: typeof backgroundColor === "string" ? backgroundColor : undefined,
+    schematexConfig,
+  };
+}
+
 export function createRenderer(deps: RendererDeps): {
   renderAll(root: ParentNode): void;
   renderOne(element: HTMLElement): void;
@@ -42,6 +53,7 @@ export function createRenderer(deps: RendererDeps): {
     element: HTMLElement,
     source: string,
     config: Record<string, unknown>,
+    backgroundColor: string | undefined,
   ): void {
     if (element.querySelector(".schematex-export-toggle")) {
       return;
@@ -54,40 +66,10 @@ export function createRenderer(deps: RendererDeps): {
     toggleButton.className = "schematex-export-toggle";
     toggleButton.setAttribute("aria-label", "Export diagram");
     toggleButton.setAttribute("aria-haspopup", "true");
-    toggleButton.setAttribute("aria-expanded", "false");
     toggleButton.textContent = "⚙";
 
     const menu = ownerDocument.createElement("div");
     menu.className = "schematex-export-menu";
-    menu.hidden = true;
-
-    function handleOutsideClick(event: Event): void {
-      const target = event.target as Node | null;
-      if (target && !menu.contains(target) && target !== toggleButton) {
-        closeMenu();
-      }
-    }
-
-    function closeMenu(): void {
-      menu.hidden = true;
-      toggleButton.setAttribute("aria-expanded", "false");
-      ownerDocument.removeEventListener("click", handleOutsideClick, true);
-    }
-
-    function openMenu(): void {
-      menu.hidden = false;
-      toggleButton.setAttribute("aria-expanded", "true");
-      ownerDocument.addEventListener("click", handleOutsideClick, true);
-    }
-
-    toggleButton.addEventListener("click", (event) => {
-      event.stopPropagation();
-      if (menu.hidden) {
-        openMenu();
-      } else {
-        closeMenu();
-      }
-    });
 
     const exportPngItem = ownerDocument.createElement("button");
     exportPngItem.type = "button";
@@ -95,7 +77,6 @@ export function createRenderer(deps: RendererDeps): {
     exportPngItem.textContent = "Export PNG";
     exportPngItem.addEventListener("click", async (event) => {
       event.stopPropagation();
-      closeMenu();
       try {
         const svgMarkup = deps.renderPreview(source, {
           ...config,
@@ -103,7 +84,7 @@ export function createRenderer(deps: RendererDeps): {
         });
         const pngBlob = await deps.svgToPngBlob(svgMarkup, {
           scale: 2,
-          background: "white",
+          background: backgroundColor ?? "white",
         });
         deps.downloadBlob(pngBlob, "diagram.png");
       } catch (exportError) {
@@ -117,7 +98,6 @@ export function createRenderer(deps: RendererDeps): {
     exportPdfItem.textContent = "Export PDF";
     exportPdfItem.addEventListener("click", (event) => {
       event.stopPropagation();
-      closeMenu();
       try {
         const svgMarkup = deps.renderPreview(source, {
           ...config,
@@ -144,12 +124,17 @@ export function createRenderer(deps: RendererDeps): {
       const config: Record<string, unknown> = rawConfig
         ? JSON.parse(rawConfig)
         : {};
+      const { backgroundColor, schematexConfig } = splitBackgroundColor(config);
+
+      if (backgroundColor) {
+        element.style.backgroundColor = backgroundColor;
+      }
 
       deps.renderPreviewToContainer(source, element, {
-        ...config,
+        ...schematexConfig,
         mode: "preview",
       });
-      attachExportButtons(element, source, config);
+      attachExportButtons(element, source, schematexConfig, backgroundColor);
     } catch (renderError) {
       showErrorCard(element, messageFromError(renderError));
     } finally {
