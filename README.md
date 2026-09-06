@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="media/logo.png" alt="SchemaTex Diagrams logo" width="128" height="128">
+  <img src="https://raw.githubusercontent.com/volkanunsal/schematex-vscode/main/media/logo.png" alt="SchemaTex Diagrams logo" width="128" height="128">
 </p>
 
 <h1 align="center">SchemaTex Diagrams</h1>
