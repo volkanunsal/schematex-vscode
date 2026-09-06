@@ -1076,11 +1076,7 @@ Expected: the item is found and not expired. If the item's expiry has passed, or
 
 Check which field on the item actually holds the token value: `op item get "Azure Personal Access Token" --vault Personal --format json` and look for the field label (commonly `credential` or `password` for an API Credential item type). Step 5 below assumes the field is named `credential` — adjust the `op read` path if it's actually named something else.
 
-- [ ] **Step 2 (manual, human): Create a Marketplace publisher**
-
-1. Go to `https://marketplace.visualstudio.com/manage` and sign in with the same account.
-2. Create a publisher (a unique publisher id, e.g. `<your-chosen-id>`) if one doesn't already exist.
-3. Report the publisher id back so it can be added to `package.json`.
+- [x] **Step 2 (manual, human): Create a Marketplace publisher** — already done. Publisher id is `VolkanUnsal`.
 
 - [ ] **Step 3: Add the publisher id to `package.json` and install the packaging CLI**
 
@@ -1088,7 +1084,7 @@ Merge this key into the existing `package.json` object (do not replace the whole
 
 ```json
 {
-  "publisher": "<publisher-id-from-step-2>"
+  "publisher": "VolkanUnsal"
 }
 ```
 
@@ -1127,11 +1123,11 @@ Expected: a `schematex-vscode-0.1.0.vsix` file is created. Run `pnpm exec vsce l
 This makes the extension publicly installable — confirm with the user before running.
 
 Run: `pnpm exec vsce publish`
-Expected: extension appears at `https://marketplace.visualstudio.com/items?itemName=<publisher-id>.schematex-vscode` within a few minutes (Marketplace review for a first publish is typically automated/fast for extensions with no flagged content, not a long manual queue — but first-time publishers should expect it can take up to a day).
+Expected: extension appears at `https://marketplace.visualstudio.com/items?itemName=VolkanUnsal.schematex-vscode` within a few minutes (Marketplace review for a first publish is typically automated/fast for extensions with no flagged content, not a long manual queue — but first-time publishers should expect it can take up to a day).
 
 - [ ] **Step 8: Fix the placeholder Marketplace badge in `README.md`**
 
-Replace the placeholder `<publisher>` in the Marketplace version badge (added in Task 6 Step 4) with the real `<publisher-id>` now that the listing exists.
+Replace whatever placeholder Task 6 left in the Marketplace version badge (its brief said to mark `<publisher>` clearly and placeholder it since the publisher id wasn't known yet at that point) with `VolkanUnsal`, now that the listing exists. Check `README.md` for the actual placeholder text Task 6 used — it may not be the literal string `<publisher>`.
 
 - [ ] **Step 9: Commit and push**
 
