@@ -1,0 +1,38 @@
+{
+  "name": "schematex-vscode",
+  "displayName": "SchemaTex Diagrams",
+  "description": "Render SchemaTex diagrams inline in the VS Code Markdown preview",
+  "version": "0.1.0",
+  "license": "AGPL-3.0-only",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewScripts": ["./media/previewScript.js"],
+    "markdown.previewStyles": ["./media/previewStyles.css"]
+  },
+  "scripts": {
+    "typecheck": "tsc -p . --noEmit",
+    "build": "node esbuild.config.js",
+    "watch": "node esbuild.config.js --watch",
+    "compile": "pnpm run typecheck && pnpm run build",
+    "test": "node --test --import tsx test/",
+    "vscode:prepublish": "pnpm run compile"
+  },
+  "dependencies": {
+    "schematex": "^1.0.14"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.23.0",
+    "jsdom": "^24.1.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}

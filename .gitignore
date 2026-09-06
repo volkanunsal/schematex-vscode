@@ -1,1 +1,6 @@
 .worktrees/
+node_modules/
+dist/
+media/previewScript.js
+media/previewScript.js.map
+*.vsix
