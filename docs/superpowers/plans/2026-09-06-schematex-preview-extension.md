@@ -1079,14 +1079,14 @@ Run: `git push origin HEAD`
 
 Marketplace publishing has manual, one-time account-setup steps that can't be automated (they require a human at a browser, MFA, and accepting terms). Those are called out explicitly below rather than scripted around.
 
-The Azure DevOps Personal Access Token already exists and is saved in 1Password: vault `Personal`, item `vscode-marketplace-token`. Read it with the `op` CLI rather than creating a new one or pasting it manually — this also means it never needs to be typed interactively or land in shell history.
+The Azure DevOps Personal Access Token already exists and is saved in 1Password: vault `Personal`, item `Azure Personal Access Token`. Read it with the `op` CLI rather than creating a new one or pasting it manually — this also means it never needs to be typed interactively or land in shell history.
 
 - [ ] **Step 1: Verify the existing Personal Access Token is still valid**
 
-Run: `op item get vscode-marketplace-token --vault Personal`
+Run: `op item get "Azure Personal Access Token" --vault Personal`
 Expected: the item is found and not expired. If the item's expiry has passed, or `op` reports it can't find the item, stop and get a fresh token from `https://dev.azure.com` (User Settings → Personal Access Tokens, **Marketplace: Manage** scope) and update the 1Password item before continuing — don't silently work around a missing/expired token.
 
-Check which field on the item actually holds the token value: `op item get vscode-marketplace-token --vault Personal --format json` and look for the field label (commonly `credential` or `password` for an API Credential item type). Step 5 below assumes the field is named `credential` — adjust the `op read` path if it's actually named something else.
+Check which field on the item actually holds the token value: `op item get "Azure Personal Access Token" --vault Personal --format json` and look for the field label (commonly `credential` or `password` for an API Credential item type). Step 5 below assumes the field is named `credential` — adjust the `op read` path if it's actually named something else.
 
 - [ ] **Step 2 (manual, human): Create a Marketplace publisher**
 
@@ -1122,7 +1122,7 @@ pnpm-lock.yaml
 
 - [ ] **Step 5: Load the Personal Access Token into the environment via `op`**
 
-Run: `export VSCE_PAT="$(op read 'op://Personal/vscode-marketplace-token/credential')"`
+Run: `export VSCE_PAT="$(op read 'op://Personal/Azure Personal Access Token/credential')"`
 (Use the field name confirmed in Step 1 if it isn't `credential`.)
 Expected: the command succeeds silently (no output) and `VSCE_PAT` is set for the rest of this shell session. `vsce` reads `VSCE_PAT` from the environment automatically for both `package`/`publish` operations below — no separate `vsce login` step needed, and the token never appears as a command-line argument or gets typed interactively.
 
