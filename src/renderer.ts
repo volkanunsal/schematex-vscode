@@ -30,6 +30,14 @@ function showErrorCard(element: HTMLElement, message: string): void {
   element.append(errorCard);
 }
 
+function logDiagnostic(
+  label: string,
+  details: Record<string, unknown>,
+): void {
+  // eslint-disable-next-line no-console
+  console.error(`[schematex-vscode] ${label}`, details);
+}
+
 function messageFromError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -126,6 +134,14 @@ export function createRenderer(deps: RendererDeps): {
         : {};
       const { backgroundColor, schematexConfig } = splitBackgroundColor(config);
 
+      logDiagnostic("decoded diagram input", {
+        dataSourceAttr: element.getAttribute("data-source"),
+        dataConfigAttr: element.getAttribute("data-config"),
+        decodedSource: source,
+        decodedConfig: config,
+        finalConfigPassedToSchematex: { ...schematexConfig, mode: "preview" },
+      });
+
       if (backgroundColor) {
         element.style.backgroundColor = backgroundColor;
       }
@@ -136,6 +152,10 @@ export function createRenderer(deps: RendererDeps): {
       });
       attachExportButtons(element, source, schematexConfig, backgroundColor);
     } catch (renderError) {
+      logDiagnostic("render threw", {
+        error: renderError,
+        message: messageFromError(renderError),
+      });
       showErrorCard(element, messageFromError(renderError));
     } finally {
       element.setAttribute("data-rendered", "true");
