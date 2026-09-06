@@ -17,7 +17,7 @@ Add a fenced code block with the `schematex` language tag to render a diagram in
 
 ````markdown
 ```schematex
-Genogram
+genogram
   Alice -- Bob
 ```
 ````
@@ -30,7 +30,7 @@ Optionally prefix the diagram body with a `---`-delimited config header to contr
 theme: dark
 fontFamily: Georgia
 ---
-Genogram
+genogram
   Alice -- Bob
 ```
 ````
@@ -55,15 +55,15 @@ SchemaTex is licensed AGPL-3.0. This extension bundles the `schematex` package d
 
 Config keys go in the optional `---`-delimited header at the top of a `schematex` fenced code block, before the diagram body.
 
-| Key          | Type   | Description                                  |
-| ------------ | ------ | --------------------------------------------- |
-| `theme`      | string | Diagram color theme (e.g. `dark`, `light`).   |
-| `fontFamily` | string | Font family used for diagram text.            |
-| `width`      | number | Rendered diagram width, in pixels.            |
-| `height`     | number | Rendered diagram height, in pixels.           |
-| `padding`    | number | Padding around the diagram content, in pixels.|
-| `scene`      | boolean | Opt in to derived geometry/source metadata and `data-sx-*` SVG hooks on the rendered diagram. |
-| `backgroundColor` | string | Background color behind the diagram (e.g. `#f5f5f5`, `transparent`). Applied as the preview container's background, and used as the fill when exporting to PNG (falls back to white if unset). Not a SchemaTex option — handled entirely by this extension. |
+| Key               | Type    | Description                                                                                                                                                                                                                                                 |
+| ----------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `theme`           | string  | Diagram color theme (e.g. `dark`, `light`).                                                                                                                                                                                                                 |
+| `fontFamily`      | string  | Font family used for diagram text.                                                                                                                                                                                                                          |
+| `width`           | number  | Rendered diagram width, in pixels.                                                                                                                                                                                                                          |
+| `height`          | number  | Rendered diagram height, in pixels.                                                                                                                                                                                                                         |
+| `padding`         | number  | Padding around the diagram content, in pixels.                                                                                                                                                                                                              |
+| `scene`           | boolean | Opt in to derived geometry/source metadata and `data-sx-*` SVG hooks on the rendered diagram.                                                                                                                                                               |
+| `backgroundColor` | string  | Background color behind the diagram (e.g. `#f5f5f5`, `transparent`). Applied as the preview container's background, and used as the fill when exporting to PNG (falls back to white if unset). Not a SchemaTex option — handled entirely by this extension. |
 
 ## License
 
