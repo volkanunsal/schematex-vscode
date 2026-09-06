@@ -18,7 +18,7 @@
 - No comments in generated code unless required by the language/tooling (e.g. a `// @ts-expect-error` with reason).
 - `schematex` npm package (verified against the published registry, v1.0.14): browser build at subpath `schematex/browser` exports `renderPreviewToContainer(text: string, container: Element, config?: SchematexConfig): void` and `renderPreview(text: string, config?: SchematexConfig): string`; `SchematexConfig` has fields `type?, width?, height?, padding?, theme?, fontFamily?, mode?: "strict"|"preview", scene?`. Export helpers at subpath `schematex/export`: `svgToPngBlob(svgString: string, options?: { scale?: number; background?: string | null }): Promise<Blob>`, `downloadBlob(blob: Blob, filename: string): void`, `printSvgAsPdf(svgString: string, title?: string): void`. Every task below argues from these exact signatures — do not substitute assumed ones.
 - After every task's commit (starting from Task 1's), push to the `origin` remote's copy of the current branch: `git push origin HEAD`. Implementation happens on an isolated worktree/feature branch (not `main`), so this pushes that branch, not `main` — see the SDD ledger's ruling on this. This keeps the GitHub repo an incremental, near-real-time record of the work rather than a single dump at the end.
-- Any image generation (the extension/marketplace/README logo, Task 6) MUST go through the `nano-banana` skill, not an ad hoc image call — this is a standing tool requirement, not specific to this plan.
+- Any image generation (the extension/marketplace/README logo, Task 6) MUST go through the `nano-banana` skill, not an ad hoc image call — this is a standing tool requirement, not specific to this plan. **Exception, ruled by the user:** `nano-banana`'s Gemini API key hit its daily free-tier quota mid-execution with no image produced; the user explicitly waived this requirement for Task 6 only. Task 6 now builds the logo as a hand-authored SVG rasterized locally — see Task 6 Step 1.
 - README content (Task 6) MUST go through the `documentation-writing` skill (Diátaxis framework) per explicit user instruction.
 
 ---
@@ -1000,18 +1000,20 @@ Run: `git push origin HEAD`
 
 - None — this task produces static assets and docs, consumed only by the VS Code packaging step in Task 7 and by GitHub's rendering of `README.md`.
 
-- [ ] **Step 1: Generate the logo via the `nano-banana` skill**
+- [ ] **Step 1: Build the logo as a hand-authored SVG, then rasterize it**
 
-Invoke the `nano-banana` skill (do not generate images by any other means — this is a standing tool requirement). Brief: a simple, modern, friendly square icon representing diagram/schema visualization — think interconnected nodes or a stylized flowchart glyph — legible at small sizes (VS Code renders extension icons as small as 24×24 in some UI), on a solid or transparent background, no text. Produce it at 512×512 or larger so it downscales cleanly.
+`nano-banana` is waived for this task (user ruling, see Global Constraints) — its Gemini API key hit its daily free-tier quota with no image produced. Build the logo directly instead:
 
-Expected: an image file saved locally (path depends on the skill's output — typically the scratchpad).
+1. Write an SVG at `media/logo-source.svg`: a simple, modern, friendly square icon representing diagram/schema visualization — interconnected nodes or a stylized flowchart glyph, legible at small sizes (VS Code renders extension icons as small as 24×24 in some UI), on a solid or transparent background, no text. A `viewBox="0 0 512 512"` square canvas with a handful of `<circle>`/`<line>` or `<rect>`/`<path>` elements is enough — keep it simple and geometric rather than attempting anything photorealistic.
+2. Rasterize it to PNG using macOS's built-in QuickLook thumbnailer (no extra install needed): `qlmanage -t -s 1024 -o media/ media/logo-source.svg` — this writes `media/logo-source.svg.png` at 1024×1024. If `qlmanage` isn't available or fails, report BLOCKED with what you tried rather than guessing at another tool.
+3. Verify the rasterized PNG actually has visible content (not blank/transparent-only) by checking its file size is more than a few KB.
 
-- [ ] **Step 2: Derive `media/icon.png` (128×128) and `media/logo.png` (512×512) from the generated artwork**
+- [ ] **Step 2: Derive `media/icon.png` (128×128) and `media/logo.png` (512×512) from the rasterized artwork**
 
 Run: `mkdir -p media`
-Run: `sips -z 512 512 <path-from-step-1> --out media/logo.png`
-Run: `sips -z 128 128 <path-from-step-1> --out media/icon.png`
-Expected: both files exist, correct dimensions (`sips -g pixelWidth -g pixelHeight media/icon.png` reports 128×128; same check for `media/logo.png` at 512×512).
+Run: `sips -z 512 512 media/logo-source.svg.png --out media/logo.png`
+Run: `sips -z 128 128 media/logo-source.svg.png --out media/icon.png`
+Expected: both files exist, correct dimensions (`sips -g pixelWidth -g pixelHeight media/icon.png` reports 128×128; same check for `media/logo.png` at 512×512). Delete `media/logo-source.svg.png` afterward (the raw QuickLook rasterization) but keep `media/logo-source.svg` (the hand-authored source, useful if the logo needs regenerating at a different size later).
 
 - [ ] **Step 3: Add `icon`, `repository`, and `galleryBanner` to `package.json`**
 
