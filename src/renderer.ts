@@ -142,14 +142,6 @@ export function createRenderer(deps: RendererDeps): {
         : {};
       const { backgroundColor, schematexConfig } = splitBackgroundColor(config);
 
-      logDiagnostic("decoded diagram input", {
-        dataSourceAttr: element.getAttribute("data-source"),
-        dataConfigAttr: element.getAttribute("data-config"),
-        decodedSource: source,
-        decodedConfig: config,
-        finalConfigPassedToSchematex: { ...schematexConfig, mode: "preview" },
-      });
-
       if (backgroundColor) {
         element.style.backgroundColor = backgroundColor;
       }
@@ -172,7 +164,16 @@ export function createRenderer(deps: RendererDeps): {
 
   function renderAll(root: ParentNode): void {
     root
-      .querySelectorAll('.schematex-diagram:not([data-rendered="true"])')
+      // [data-source] is required, not just .schematex-diagram: schematex's
+      // own rendered SVG root also carries a "schematex-diagram" class (its
+      // own naming convention, unrelated to ours), so a plain class selector
+      // matches both our placeholder div AND the SVG we just rendered into
+      // it. Re-processing that SVG (which has no data-source/data-config)
+      // decodes an empty string and overwrites the just-rendered diagram
+      // with schematex's own "cannot detect diagram type" fallback.
+      .querySelectorAll(
+        '.schematex-diagram[data-source]:not([data-rendered="true"])',
+      )
       .forEach((element) => {
         renderOne(element as HTMLElement);
       });

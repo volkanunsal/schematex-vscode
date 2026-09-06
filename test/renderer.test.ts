@@ -111,6 +111,40 @@ test("does not re-render a container already marked rendered", () => {
   assert.equal(callCount, 0);
 });
 
+test("does not re-process schematex's own rendered SVG, which also carries the schematex-diagram class", () => {
+  // Regression test: schematex's rendered SVG root has class="schematex-diagram
+  // schematex-<type>" (its own naming convention). A plain `.schematex-diagram`
+  // selector matches both our placeholder div and that inner SVG once
+  // rendered, so a MutationObserver-triggered re-scan would try to render
+  // the SVG itself (which has no data-source/data-config) with an empty
+  // source, overwriting the just-rendered diagram with schematex's own
+  // "cannot detect diagram type" fallback. renderAll must only ever act on
+  // elements carrying [data-source].
+  const { document, element } = makeDiagramContainer("Genogram\n");
+  let callCount = 0;
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container) => {
+        callCount++;
+        (container as HTMLElement).innerHTML =
+          '<svg class="schematex-diagram schematex-genogram"></svg>';
+      },
+    }),
+  );
+
+  renderer.renderAll(document);
+  assert.equal(callCount, 1);
+
+  // Simulate the MutationObserver firing again after the DOM changed.
+  renderer.renderAll(document);
+  assert.equal(callCount, 1);
+
+  const innerSvg = element.querySelector("svg.schematex-diagram");
+  assert.ok(innerSvg);
+  assert.equal(innerSvg?.hasAttribute("data-rendered"), false);
+});
+
 test("shows an inline error card when decoding the container's attributes fails, and still marks rendered", () => {
   // renderPreviewToContainer throwing simulates a decode-time failure (e.g.
   // malformed base64/JSON in data-source/data-config), which is what
