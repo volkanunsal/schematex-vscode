@@ -26,6 +26,7 @@
 ## Task 1: Project scaffolding & build pipeline
 
 **Files:**
+
 - Create: `package.json`
 - Create: `tsconfig.json`
 - Create: `esbuild.config.js`
@@ -36,6 +37,7 @@
 - Create: `README.md`
 
 **Interfaces:**
+
 - Produces: `activate(context: vscode.ExtensionContext)` exported from `src/extension.ts`, returning `{ extendMarkdownIt(md: MarkdownIt): MarkdownIt }` — Task 3 fills in the real plugin call here.
 
 - [ ] **Step 1: Write `package.json`**
@@ -103,29 +105,29 @@
 - [ ] **Step 3: Write `esbuild.config.js`**
 
 ```js
-const esbuild = require('esbuild');
+const esbuild = require("esbuild");
 
-const watchMode = process.argv.includes('--watch');
+const watchMode = process.argv.includes("--watch");
 
 async function build() {
   const extensionContext = await esbuild.context({
-    entryPoints: ['src/extension.ts'],
+    entryPoints: ["src/extension.ts"],
     bundle: true,
-    platform: 'node',
-    format: 'cjs',
-    target: 'node18',
-    external: ['vscode'],
-    outfile: 'dist/extension.js',
+    platform: "node",
+    format: "cjs",
+    target: "node18",
+    external: ["vscode"],
+    outfile: "dist/extension.js",
     sourcemap: true,
   });
 
   const previewScriptContext = await esbuild.context({
-    entryPoints: ['src/previewScript.ts'],
+    entryPoints: ["src/previewScript.ts"],
     bundle: true,
-    platform: 'browser',
-    format: 'iife',
-    target: 'es2020',
-    outfile: 'media/previewScript.js',
+    platform: "browser",
+    format: "iife",
+    target: "es2020",
+    outfile: "media/previewScript.js",
     sourcemap: true,
   });
 
@@ -149,8 +151,8 @@ build().catch((error) => {
 - [ ] **Step 4: Write the stub `src/extension.ts`**
 
 ```typescript
-import type MarkdownIt from 'markdown-it';
-import * as vscode from 'vscode';
+import type MarkdownIt from "markdown-it";
+import * as vscode from "vscode";
 
 export function activate(_context: vscode.ExtensionContext) {
   return {
@@ -199,7 +201,7 @@ Expected: `LICENSE` created, non-empty, starts with `GNU AFFERO GENERAL PUBLIC L
 
 - [ ] **Step 8: Write a minimal `README.md`**
 
-```markdown
+````markdown
 # SchemaTex Diagrams for VS Code
 
 Renders [SchemaTex](https://github.com/SchemaTex/SchemaTex) diagrams inline in the Markdown preview.
@@ -229,7 +231,7 @@ Supported config keys: `theme`, `fontFamily`, `width`, `height`, `padding`, `sce
 ## License
 
 AGPL-3.0-only. Bundles [`schematex`](https://github.com/SchemaTex/SchemaTex) (AGPL-3.0).
-```
+````
 
 - [ ] **Step 9: Install dependencies**
 
@@ -251,12 +253,12 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
 ```
 
-- [ ] **Step 12: Create the GitHub repository and set up the remote**
+- [ ] **Step 12: Push to the already-created GitHub remote**
 
-This creates a public GitHub repository — confirm the repo name and visibility with the user before running, since it's a visible external action, not a local one.
+The GitHub repo and `origin` remote already exist (created outside this plan) — no `gh repo create` needed here, just push.
 
-Run: `gh repo create schematex-vscode --public --source=. --remote=origin --description "Render SchemaTex diagrams inline in the VS Code Markdown preview"`
-Expected: repo created under the authenticated GitHub account, `origin` remote added.
+Run: `git remote -v`
+Expected: `origin` is listed with a `github.com` URL.
 
 Run: `git push -u origin main`
 Expected: `main` branch pushed, upstream tracking set — every subsequent task's commit only needs `git push origin main` from here on (see Global Constraints).
@@ -266,48 +268,51 @@ Expected: `main` branch pushed, upstream tracking set — every subsequent task'
 ## Task 2: Per-diagram config header parsing
 
 **Files:**
+
 - Create: `src/config.ts`
 - Test: `test/config.test.ts`
 
 **Interfaces:**
+
 - Produces: `SchematexConfig` interface and `parseConfigHeader(raw: string): { config: SchematexConfig; body: string }`, exported from `src/config.ts`. Task 3 and Task 4 both import this.
 
 - [ ] **Step 1: Write the failing tests**
 
 ```typescript
 // test/config.test.ts
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { parseConfigHeader } from '../src/config';
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { parseConfigHeader } from "../src/config";
 
-test('returns the whole input as body when no config header is present', () => {
-  const { config, body } = parseConfigHeader('Genogram\n  Alice -- Bob\n');
+test("returns the whole input as body when no config header is present", () => {
+  const { config, body } = parseConfigHeader("Genogram\n  Alice -- Bob\n");
   assert.deepEqual(config, {});
-  assert.equal(body, 'Genogram\n  Alice -- Bob\n');
+  assert.equal(body, "Genogram\n  Alice -- Bob\n");
 });
 
-test('parses a --- delimited config header', () => {
-  const raw = '---\ntheme: dark\nwidth: 400\n---\nGenogram\n  Alice -- Bob\n';
+test("parses a --- delimited config header", () => {
+  const raw = "---\ntheme: dark\nwidth: 400\n---\nGenogram\n  Alice -- Bob\n";
   const { config, body } = parseConfigHeader(raw);
-  assert.deepEqual(config, { theme: 'dark', width: 400 });
-  assert.equal(body, 'Genogram\n  Alice -- Bob\n');
+  assert.deepEqual(config, { theme: "dark", width: 400 });
+  assert.equal(body, "Genogram\n  Alice -- Bob\n");
 });
 
-test('ignores unknown keys and non-numeric values for numeric fields', () => {
-  const raw = '---\ntheme: dark\nbogus: nope\nwidth: notanumber\n---\nGenogram\n';
+test("ignores unknown keys and non-numeric values for numeric fields", () => {
+  const raw =
+    "---\ntheme: dark\nbogus: nope\nwidth: notanumber\n---\nGenogram\n";
   const { config, body } = parseConfigHeader(raw);
-  assert.deepEqual(config, { theme: 'dark' });
-  assert.equal(body, 'Genogram\n');
+  assert.deepEqual(config, { theme: "dark" });
+  assert.equal(body, "Genogram\n");
 });
 
-test('coerces scene to a boolean', () => {
-  const raw = '---\nscene: true\n---\nGenogram\n';
+test("coerces scene to a boolean", () => {
+  const raw = "---\nscene: true\n---\nGenogram\n";
   const { config } = parseConfigHeader(raw);
   assert.deepEqual(config, { scene: true });
 });
 
-test('treats an unterminated config header as no header at all', () => {
-  const raw = '---\ntheme: dark\nGenogram\n  Alice -- Bob\n';
+test("treats an unterminated config header as no header at all", () => {
+  const raw = "---\ntheme: dark\nGenogram\n  Alice -- Bob\n";
   const { config, body } = parseConfigHeader(raw);
   assert.deepEqual(config, {});
   assert.equal(body, raw);
@@ -332,14 +337,24 @@ export interface SchematexConfig {
   scene?: boolean;
 }
 
-const numericKeys = new Set(['width', 'height', 'padding']);
-const booleanKeys = new Set(['scene']);
-const allowedKeys = new Set(['theme', 'fontFamily', 'width', 'height', 'padding', 'scene']);
+const numericKeys = new Set(["width", "height", "padding"]);
+const booleanKeys = new Set(["scene"]);
+const allowedKeys = new Set([
+  "theme",
+  "fontFamily",
+  "width",
+  "height",
+  "padding",
+  "scene",
+]);
 
-export function parseConfigHeader(raw: string): { config: SchematexConfig; body: string } {
-  const lines = raw.replace(/\r\n/g, '\n').split('\n');
+export function parseConfigHeader(raw: string): {
+  config: SchematexConfig;
+  body: string;
+} {
+  const lines = raw.replace(/\r\n/g, "\n").split("\n");
 
-  if (lines[0]?.trim() !== '---') {
+  if (lines[0]?.trim() !== "---") {
     return { config: {}, body: raw };
   }
 
@@ -347,7 +362,7 @@ export function parseConfigHeader(raw: string): { config: SchematexConfig; body:
   let closingDelimiterIndex = -1;
 
   for (let lineIndex = 1; lineIndex < lines.length; lineIndex++) {
-    if (lines[lineIndex].trim() === '---') {
+    if (lines[lineIndex].trim() === "---") {
       closingDelimiterIndex = lineIndex;
       break;
     }
@@ -372,13 +387,13 @@ export function parseConfigHeader(raw: string): { config: SchematexConfig; body:
         config[key] = numericValue;
       }
     } else if (booleanKeys.has(key)) {
-      config[key] = rawValue.trim() === 'true';
+      config[key] = rawValue.trim() === "true";
     } else {
       config[key] = rawValue.trim();
     }
   }
 
-  const body = lines.slice(closingDelimiterIndex + 1).join('\n');
+  const body = lines.slice(closingDelimiterIndex + 1).join("\n");
   return { config: config as SchematexConfig, body };
 }
 ```
@@ -407,11 +422,13 @@ Run: `git push origin main`
 ## Task 3: markdown-it plugin & extension wiring
 
 **Files:**
+
 - Create: `src/markdownItPlugin.ts`
 - Modify: `src/extension.ts`
 - Test: `test/markdownItPlugin.test.ts`
 
 **Interfaces:**
+
 - Consumes: `parseConfigHeader` from `src/config.ts` (Task 2).
 - Produces: `schematexPlugin(markdownItInstance: MarkdownIt): void`, exported from `src/markdownItPlugin.ts`. Task 5 does not need this directly (only `extension.ts` does), but its output contract — `<div class="schematex-diagram" data-source="BASE64" data-config="BASE64">` — is what Task 4's renderer parses.
 
@@ -422,12 +439,12 @@ Expected: `package.json` devDependencies gains `markdown-it`.
 
 - [ ] **Step 2: Write the failing tests**
 
-```typescript
+````typescript
 // test/markdownItPlugin.test.ts
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import MarkdownIt from 'markdown-it';
-import { schematexPlugin } from '../src/markdownItPlugin';
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import MarkdownIt from "markdown-it";
+import { schematexPlugin } from "../src/markdownItPlugin";
 
 function renderMarkdown(markdownSource: string): string {
   const markdownItInstance = new MarkdownIt();
@@ -435,26 +452,37 @@ function renderMarkdown(markdownSource: string): string {
   return markdownItInstance.render(markdownSource);
 }
 
-test('renders a schematex fence as a placeholder div', () => {
-  const html = renderMarkdown('```schematex\nGenogram\n  Alice -- Bob\n```\n');
-  assert.match(html, /<div class="schematex-diagram" data-source="[^"]+" data-config="[^"]+"><\/div>/);
+test("renders a schematex fence as a placeholder div", () => {
+  const html = renderMarkdown("```schematex\nGenogram\n  Alice -- Bob\n```\n");
+  assert.match(
+    html,
+    /<div class="schematex-diagram" data-source="[^"]+" data-config="[^"]+"><\/div>/,
+  );
 });
 
-test('leaves non-schematex fences untouched', () => {
-  const html = renderMarkdown('```js\nconst x = 1;\n```\n');
+test("leaves non-schematex fences untouched", () => {
+  const html = renderMarkdown("```js\nconst x = 1;\n```\n");
   assert.match(html, /<pre><code class="language-js">/);
   assert.doesNotMatch(html, /schematex-diagram/);
 });
 
-test('base64-encodes the DSL body without the config header, and the parsed config separately', () => {
-  const html = renderMarkdown('```schematex\n---\ntheme: dark\n---\nGenogram\n  Alice -- Bob\n```\n');
+test("base64-encodes the DSL body without the config header, and the parsed config separately", () => {
+  const html = renderMarkdown(
+    "```schematex\n---\ntheme: dark\n---\nGenogram\n  Alice -- Bob\n```\n",
+  );
   const sourceMatch = html.match(/data-source="([^"]+)"/);
   const configMatch = html.match(/data-config="([^"]+)"/);
   assert.ok(sourceMatch && configMatch);
-  assert.equal(Buffer.from(sourceMatch![1], 'base64').toString('utf8'), 'Genogram\n  Alice -- Bob\n');
-  assert.deepEqual(JSON.parse(Buffer.from(configMatch![1], 'base64').toString('utf8')), { theme: 'dark' });
+  assert.equal(
+    Buffer.from(sourceMatch![1], "base64").toString("utf8"),
+    "Genogram\n  Alice -- Bob\n",
+  );
+  assert.deepEqual(
+    JSON.parse(Buffer.from(configMatch![1], "base64").toString("utf8")),
+    { theme: "dark" },
+  );
 });
-```
+````
 
 - [ ] **Step 3: Run the tests to verify they fail**
 
@@ -465,23 +493,33 @@ Expected: FAIL — `Cannot find module '../src/markdownItPlugin'`.
 
 ```typescript
 // src/markdownItPlugin.ts
-import type MarkdownIt from 'markdown-it';
-import { parseConfigHeader } from './config';
+import type MarkdownIt from "markdown-it";
+import { parseConfigHeader } from "./config";
 
 export function schematexPlugin(markdownItInstance: MarkdownIt): void {
-  const defaultFenceRenderer = markdownItInstance.renderer.rules.fence!.bind(markdownItInstance.renderer.rules);
+  const defaultFenceRenderer = markdownItInstance.renderer.rules.fence!.bind(
+    markdownItInstance.renderer.rules,
+  );
 
-  markdownItInstance.renderer.rules.fence = (tokens, tokenIndex, options, env, self) => {
+  markdownItInstance.renderer.rules.fence = (
+    tokens,
+    tokenIndex,
+    options,
+    env,
+    self,
+  ) => {
     const token = tokens[tokenIndex];
     const fenceInfo = token.info.trim();
 
-    if (fenceInfo !== 'schematex') {
+    if (fenceInfo !== "schematex") {
       return defaultFenceRenderer(tokens, tokenIndex, options, env, self);
     }
 
     const { config, body } = parseConfigHeader(token.content);
-    const encodedSource = Buffer.from(body, 'utf8').toString('base64');
-    const encodedConfig = Buffer.from(JSON.stringify(config), 'utf8').toString('base64');
+    const encodedSource = Buffer.from(body, "utf8").toString("base64");
+    const encodedConfig = Buffer.from(JSON.stringify(config), "utf8").toString(
+      "base64",
+    );
 
     return `<div class="schematex-diagram" data-source="${encodedSource}" data-config="${encodedConfig}"></div>\n`;
   };
@@ -497,9 +535,9 @@ Expected: PASS, all 3 tests in `test/markdownItPlugin.test.ts` green, plus Task 
 
 ```typescript
 // src/extension.ts
-import type MarkdownIt from 'markdown-it';
-import * as vscode from 'vscode';
-import { schematexPlugin } from './markdownItPlugin';
+import type MarkdownIt from "markdown-it";
+import * as vscode from "vscode";
+import { schematexPlugin } from "./markdownItPlugin";
 
 export function activate(_context: vscode.ExtensionContext) {
   return {
@@ -537,10 +575,12 @@ Run: `git push origin main`
 ## Task 4: Preview renderer core (render, errors, dedup, export)
 
 **Files:**
+
 - Create: `src/renderer.ts`
 - Test: `test/renderer.test.ts`
 
 **Interfaces:**
+
 - Produces: `RendererDeps` interface and `createRenderer(deps: RendererDeps): { renderAll(root: ParentNode): void; renderOne(el: HTMLElement): void }`, exported from `src/renderer.ts`. Task 5's `src/previewScript.ts` is the only consumer — it supplies the real `schematex/browser` and `schematex/export` functions as `deps` and calls `renderAll(document)` on load and from a `MutationObserver`.
 - The renderer expects each target element to carry `data-source` and `data-config` attributes exactly as produced by Task 3's `schematexPlugin` (base64-encoded UTF-8 strings; `data-config` is a base64-encoded JSON object).
 
@@ -553,20 +593,30 @@ Expected: shows the installed `jsdom` version. If missing, run `pnpm add -D jsdo
 
 ```typescript
 // test/renderer.test.ts
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { JSDOM } from 'jsdom';
-import { createRenderer, type RendererDeps } from '../src/renderer';
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { JSDOM } from "jsdom";
+import { createRenderer, type RendererDeps } from "../src/renderer";
 
-function makeDiagramContainer(source: string, config: Record<string, unknown> = {}) {
-  const dom = new JSDOM('<!doctype html><html><body></body></html>');
+function makeDiagramContainer(
+  source: string,
+  config: Record<string, unknown> = {},
+) {
+  const dom = new JSDOM("<!doctype html><html><body></body></html>");
   const document = dom.window.document;
-  (globalThis as any).atob = (base64: string) => Buffer.from(base64, 'base64').toString('binary');
+  (globalThis as any).atob = (base64: string) =>
+    Buffer.from(base64, "base64").toString("binary");
 
-  const element = document.createElement('div');
-  element.className = 'schematex-diagram';
-  element.setAttribute('data-source', Buffer.from(source, 'utf8').toString('base64'));
-  element.setAttribute('data-config', Buffer.from(JSON.stringify(config), 'utf8').toString('base64'));
+  const element = document.createElement("div");
+  element.className = "schematex-diagram";
+  element.setAttribute(
+    "data-source",
+    Buffer.from(source, "utf8").toString("base64"),
+  );
+  element.setAttribute(
+    "data-config",
+    Buffer.from(JSON.stringify(config), "utf8").toString("base64"),
+  );
   document.body.appendChild(element);
 
   return { document, element, window: dom.window };
@@ -575,7 +625,7 @@ function makeDiagramContainer(source: string, config: Record<string, unknown> = 
 function noopDeps(overrides: Partial<RendererDeps> = {}): RendererDeps {
   return {
     renderPreviewToContainer: () => {},
-    renderPreview: () => '<svg></svg>',
+    renderPreview: () => "<svg></svg>",
     svgToPngBlob: async () => new Blob(),
     downloadBlob: () => {},
     printSvgAsPdf: () => {},
@@ -583,78 +633,117 @@ function noopDeps(overrides: Partial<RendererDeps> = {}): RendererDeps {
   };
 }
 
-test('renders a diagram container, passing decoded source and config with mode forced to preview', () => {
-  const { document, element } = makeDiagramContainer('Genogram\n  Alice -- Bob\n', { theme: 'dark' });
-  let received: { text: string; container: Element; config: Record<string, unknown> } | undefined;
+test("renders a diagram container, passing decoded source and config with mode forced to preview", () => {
+  const { document, element } = makeDiagramContainer(
+    "Genogram\n  Alice -- Bob\n",
+    { theme: "dark" },
+  );
+  let received:
+    | { text: string; container: Element; config: Record<string, unknown> }
+    | undefined;
 
-  const renderer = createRenderer(noopDeps({
-    renderPreviewToContainer: (text, container, config) => {
-      received = { text, container, config: config as Record<string, unknown> };
-      (container as HTMLElement).innerHTML = '<svg></svg>';
-    },
-  }));
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (text, container, config) => {
+        received = {
+          text,
+          container,
+          config: config as Record<string, unknown>,
+        };
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+    }),
+  );
 
   renderer.renderAll(document);
 
-  assert.equal(element.getAttribute('data-rendered'), 'true');
-  assert.equal(received?.text, 'Genogram\n  Alice -- Bob\n');
-  assert.equal(received?.config.theme, 'dark');
-  assert.equal(received?.config.mode, 'preview');
+  assert.equal(element.getAttribute("data-rendered"), "true");
+  assert.equal(received?.text, "Genogram\n  Alice -- Bob\n");
+  assert.equal(received?.config.theme, "dark");
+  assert.equal(received?.config.mode, "preview");
   assert.match(element.innerHTML, /<svg><\/svg>/);
 });
 
-test('does not re-render a container already marked rendered', () => {
-  const { document, element } = makeDiagramContainer('Genogram\n');
-  element.setAttribute('data-rendered', 'true');
+test("does not re-render a container already marked rendered", () => {
+  const { document, element } = makeDiagramContainer("Genogram\n");
+  element.setAttribute("data-rendered", "true");
   let callCount = 0;
 
-  const renderer = createRenderer(noopDeps({
-    renderPreviewToContainer: () => { callCount++; },
-  }));
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: () => {
+        callCount++;
+      },
+    }),
+  );
 
   renderer.renderAll(document);
 
   assert.equal(callCount, 0);
 });
 
-test('shows an inline error card and still marks rendered when rendering throws', () => {
-  const { document, element } = makeDiagramContainer('Genogram\n');
+test("shows an inline error card and still marks rendered when rendering throws", () => {
+  const { document, element } = makeDiagramContainer("Genogram\n");
 
-  const renderer = createRenderer(noopDeps({
-    renderPreviewToContainer: () => { throw new Error('boom'); },
-  }));
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: () => {
+        throw new Error("boom");
+      },
+    }),
+  );
 
   renderer.renderAll(document);
 
-  assert.equal(element.getAttribute('data-rendered'), 'true');
+  assert.equal(element.getAttribute("data-rendered"), "true");
   assert.match(element.innerHTML, /schematex-error/);
   assert.match(element.innerHTML, /boom/);
 });
 
-test('adds working Export PNG and Export PDF buttons after a successful render', async () => {
-  const { document, element, window } = makeDiagramContainer('Genogram\n', { theme: 'dark' });
+test("adds working Export PNG and Export PDF buttons after a successful render", async () => {
+  const { document, element, window } = makeDiagramContainer("Genogram\n", {
+    theme: "dark",
+  });
   const calls: string[] = [];
 
-  const renderer = createRenderer(noopDeps({
-    renderPreviewToContainer: (_text, container) => { (container as HTMLElement).innerHTML = '<svg></svg>'; },
-    renderPreview: () => { calls.push('renderPreview'); return '<svg></svg>'; },
-    svgToPngBlob: async () => { calls.push('svgToPngBlob'); return new Blob(); },
-    downloadBlob: () => { calls.push('downloadBlob'); },
-    printSvgAsPdf: () => { calls.push('printSvgAsPdf'); },
-  }));
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container) => {
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+      renderPreview: () => {
+        calls.push("renderPreview");
+        return "<svg></svg>";
+      },
+      svgToPngBlob: async () => {
+        calls.push("svgToPngBlob");
+        return new Blob();
+      },
+      downloadBlob: () => {
+        calls.push("downloadBlob");
+      },
+      printSvgAsPdf: () => {
+        calls.push("printSvgAsPdf");
+      },
+    }),
+  );
 
   renderer.renderAll(document);
 
-  const buttons = element.querySelectorAll('.schematex-export-bar button');
+  const buttons = element.querySelectorAll(".schematex-export-bar button");
   assert.equal(buttons.length, 2);
 
-  (buttons[0] as HTMLElement).dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  (buttons[0] as HTMLElement).dispatchEvent(
+    new window.MouseEvent("click", { bubbles: true }),
+  );
   await new Promise((resolve) => setTimeout(resolve, 0));
-  assert.deepEqual(calls, ['renderPreview', 'svgToPngBlob', 'downloadBlob']);
+  assert.deepEqual(calls, ["renderPreview", "svgToPngBlob", "downloadBlob"]);
 
   calls.length = 0;
-  (buttons[1] as HTMLElement).dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  assert.deepEqual(calls, ['renderPreview', 'printSvgAsPdf']);
+  (buttons[1] as HTMLElement).dispatchEvent(
+    new window.MouseEvent("click", { bubbles: true }),
+  );
+  assert.deepEqual(calls, ["renderPreview", "printSvgAsPdf"]);
 });
 ```
 
@@ -668,15 +757,25 @@ Expected: FAIL — `Cannot find module '../src/renderer'`.
 ```typescript
 // src/renderer.ts
 export interface RendererDeps {
-  renderPreviewToContainer: (text: string, container: Element, config?: Record<string, unknown>) => void;
+  renderPreviewToContainer: (
+    text: string,
+    container: Element,
+    config?: Record<string, unknown>,
+  ) => void;
   renderPreview: (text: string, config?: Record<string, unknown>) => string;
-  svgToPngBlob: (svg: string, options?: { scale?: number; background?: string | null }) => Promise<Blob>;
+  svgToPngBlob: (
+    svg: string,
+    options?: { scale?: number; background?: string | null },
+  ) => Promise<Blob>;
   downloadBlob: (blob: Blob, filename: string) => void;
   printSvgAsPdf: (svg: string, title?: string) => void;
 }
 
-function decodeBase64Attribute(element: Element, attributeName: string): string {
-  const encodedValue = element.getAttribute(attributeName) || '';
+function decodeBase64Attribute(
+  element: Element,
+  attributeName: string,
+): string {
+  const encodedValue = element.getAttribute(attributeName) || "";
   return atob(encodedValue);
 }
 
@@ -684,28 +783,35 @@ export function createRenderer(deps: RendererDeps): {
   renderAll(root: ParentNode): void;
   renderOne(element: HTMLElement): void;
 } {
-  function attachExportButtons(element: HTMLElement, source: string, config: Record<string, unknown>): void {
-    if (element.querySelector('.schematex-export-bar')) {
+  function attachExportButtons(
+    element: HTMLElement,
+    source: string,
+    config: Record<string, unknown>,
+  ): void {
+    if (element.querySelector(".schematex-export-bar")) {
       return;
     }
 
     const ownerDocument = element.ownerDocument;
-    const exportBar = ownerDocument.createElement('div');
-    exportBar.className = 'schematex-export-bar';
+    const exportBar = ownerDocument.createElement("div");
+    exportBar.className = "schematex-export-bar";
 
-    const exportPngButton = ownerDocument.createElement('button');
-    exportPngButton.textContent = 'Export PNG';
-    exportPngButton.addEventListener('click', async () => {
+    const exportPngButton = ownerDocument.createElement("button");
+    exportPngButton.textContent = "Export PNG";
+    exportPngButton.addEventListener("click", async () => {
       const svgMarkup = deps.renderPreview(source, config);
-      const pngBlob = await deps.svgToPngBlob(svgMarkup, { scale: 2, background: 'white' });
-      deps.downloadBlob(pngBlob, 'diagram.png');
+      const pngBlob = await deps.svgToPngBlob(svgMarkup, {
+        scale: 2,
+        background: "white",
+      });
+      deps.downloadBlob(pngBlob, "diagram.png");
     });
 
-    const exportPdfButton = ownerDocument.createElement('button');
-    exportPdfButton.textContent = 'Export PDF';
-    exportPdfButton.addEventListener('click', () => {
+    const exportPdfButton = ownerDocument.createElement("button");
+    exportPdfButton.textContent = "Export PDF";
+    exportPdfButton.addEventListener("click", () => {
       const svgMarkup = deps.renderPreview(source, config);
-      deps.printSvgAsPdf(svgMarkup, 'SchemaTex diagram');
+      deps.printSvgAsPdf(svgMarkup, "SchemaTex diagram");
     });
 
     exportBar.append(exportPngButton, exportPdfButton);
@@ -714,24 +820,34 @@ export function createRenderer(deps: RendererDeps): {
 
   function renderOne(element: HTMLElement): void {
     try {
-      const source = decodeBase64Attribute(element, 'data-source');
-      const rawConfig = decodeBase64Attribute(element, 'data-config');
-      const config: Record<string, unknown> = rawConfig ? JSON.parse(rawConfig) : {};
+      const source = decodeBase64Attribute(element, "data-source");
+      const rawConfig = decodeBase64Attribute(element, "data-config");
+      const config: Record<string, unknown> = rawConfig
+        ? JSON.parse(rawConfig)
+        : {};
 
-      deps.renderPreviewToContainer(source, element, { ...config, mode: 'preview' });
+      deps.renderPreviewToContainer(source, element, {
+        ...config,
+        mode: "preview",
+      });
       attachExportButtons(element, source, config);
     } catch (renderError) {
-      const message = renderError instanceof Error ? renderError.message : String(renderError);
+      const message =
+        renderError instanceof Error
+          ? renderError.message
+          : String(renderError);
       element.innerHTML = `<div class="schematex-error">SchemaTex error: ${message}</div>`;
     } finally {
-      element.setAttribute('data-rendered', 'true');
+      element.setAttribute("data-rendered", "true");
     }
   }
 
   function renderAll(root: ParentNode): void {
-    root.querySelectorAll('.schematex-diagram:not([data-rendered="true"])').forEach((element) => {
-      renderOne(element as HTMLElement);
-    });
+    root
+      .querySelectorAll('.schematex-diagram:not([data-rendered="true"])')
+      .forEach((element) => {
+        renderOne(element as HTMLElement);
+      });
   }
 
   return { renderAll, renderOne };
@@ -762,19 +878,21 @@ Run: `git push origin main`
 ## Task 5: Preview script bundle entry, styles, and manifest wiring
 
 **Files:**
+
 - Modify: `src/previewScript.ts` (replace the `export {};` placeholder from Task 1)
 - Create: `media/previewStyles.css`
 
 **Interfaces:**
+
 - Consumes: `createRenderer` from `src/renderer.ts` (Task 4); `renderPreviewToContainer`, `renderPreview` from `schematex/browser`; `svgToPngBlob`, `downloadBlob`, `printSvgAsPdf` from `schematex/export`.
 - This task has no automated test — it is thin wiring around already-tested logic (`createRenderer`), plus the actual `schematex` rendering which only runs correctly inside a browser DOM (VS Code's preview webview). This gap is called out explicitly in the spec's Testing section; verification here is manual, in the Extension Development Host.
 
 - [ ] **Step 1: Write the real `src/previewScript.ts`**
 
 ```typescript
-import { renderPreviewToContainer, renderPreview } from 'schematex/browser';
-import { svgToPngBlob, downloadBlob, printSvgAsPdf } from 'schematex/export';
-import { createRenderer } from './renderer';
+import { renderPreviewToContainer, renderPreview } from "schematex/browser";
+import { svgToPngBlob, downloadBlob, printSvgAsPdf } from "schematex/export";
+import { createRenderer } from "./renderer";
 
 const renderer = createRenderer({
   renderPreviewToContainer,
@@ -820,7 +938,10 @@ observer.observe(document.body, { childList: true, subtree: true });
 
 .schematex-error {
   border: 1px solid var(--vscode-inputValidation-errorBorder, #a1260d);
-  background: var(--vscode-inputValidation-errorBackground, rgba(161, 38, 13, 0.1));
+  background: var(
+    --vscode-inputValidation-errorBackground,
+    rgba(161, 38, 13, 0.1)
+  );
   color: var(--vscode-editor-foreground, inherit);
   padding: 0.75em;
   font-family: var(--vscode-editor-font-family, monospace);
@@ -839,7 +960,7 @@ Expected: exits 0, `media/previewScript.js` now contains the bundled renderer pl
 2. Press F5 (Run Extension) to launch the Extension Development Host.
 3. In the new window, create a scratch file `test.md` with:
 
-   ```
+   ````
    # Test
 
    ```schematex
@@ -848,7 +969,10 @@ Expected: exits 0, `media/previewScript.js` now contains the bundled renderer pl
    ---
    Genogram
      Alice -- Bob
+   ````
+
    ```
+
    ```
 
 4. Open the Markdown preview (`Cmd+Shift+V` / `Ctrl+Shift+V`).
@@ -878,12 +1002,14 @@ Run: `git push origin main`
 ## Task 6: Extension icon/logo and marketplace-ready README
 
 **Files:**
+
 - Create: `media/icon.png` (128×128, PNG, opaque or transparent background per VS Code Marketplace requirements)
 - Create: `media/logo.png` (512×512, same artwork, for the GitHub README header — same visual identity everywhere per the requirement that extension, Marketplace listing, and README all show the same logo)
 - Modify: `package.json` (add `icon`, `repository`, `galleryBanner`)
 - Modify: `README.md` (logo header, badges, Diátaxis-shaped content)
 
 **Interfaces:**
+
 - None — this task produces static assets and docs, consumed only by the VS Code packaging step in Task 7 and by GitHub's rendering of `README.md`.
 
 - [ ] **Step 1: Generate the logo via the `nano-banana` skill**
@@ -915,11 +1041,12 @@ Expected: both files exist, correct dimensions (`sips -g pixelWidth -g pixelHeig
 }
 ```
 
-Replace `<github-username>` with the actual account used in Task 1 Step 12's `gh repo create`. Merge these keys into the existing `package.json` object (written in Task 1) rather than replacing the whole file.
+Replace `<github-username>` with the account that owns the already-created `origin` remote (check `git remote -v` if unsure). Merge these keys into the existing `package.json` object (written in Task 1) rather than replacing the whole file.
 
 - [ ] **Step 4: Rewrite `README.md` via the `documentation-writing` skill**
 
 Invoke the `documentation-writing` skill (Diátaxis framework) to rewrite `README.md`, replacing Task 1's minimal draft. Requirements to give the skill:
+
 - Header: `media/logo.png` image, project name, one-line description.
 - Badges row directly under the header, using shields.io, at minimum: License (`AGPL--3.0--only`), and a VS Code Marketplace version badge pointing at `https://marketplace.visualstudio.com/items?itemName=<publisher>.schematex-vscode` (placeholder `<publisher>` until Task 7 assigns a real publisher id — mark it clearly as a placeholder to fill in after publishing).
 - A how-to-use section (already drafted content from Task 1's README is reusable source material: fence syntax, config header keys, supported keys table).
@@ -945,10 +1072,12 @@ Run: `git push origin main`
 ## Task 7: Publish to the VS Code Marketplace
 
 **Files:**
+
 - Modify: `package.json` (add real `publisher` id once created)
 - Create: `.vscodeignore`
 
 **Interfaces:**
+
 - None — this task packages and ships the artifact built by Tasks 1–6; it doesn't change runtime behavior.
 
 Marketplace publishing has manual, one-time account-setup steps that can't be automated (they require a human at a browser, MFA, and accepting terms). Those are called out explicitly below rather than scripted around.
