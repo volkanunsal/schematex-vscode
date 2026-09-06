@@ -1085,12 +1085,14 @@ Run: `git push origin HEAD`
 
 Marketplace publishing has manual, one-time account-setup steps that can't be automated (they require a human at a browser, MFA, and accepting terms). Those are called out explicitly below rather than scripted around.
 
-- [ ] **Step 1 (manual, human): Create an Azure DevOps organization and Personal Access Token**
+The Azure DevOps Personal Access Token already exists and is saved in 1Password: vault `Personal`, item `vscode-marketplace-token`. Read it with the `op` CLI rather than creating a new one or pasting it manually — this also means it never needs to be typed interactively or land in shell history.
 
-1. Go to `https://dev.azure.com` and sign in (create an account if needed).
-2. Create an organization if one doesn't already exist.
-3. Under User Settings → Personal Access Tokens, create a new token with **Marketplace: Manage** scope, no expiration shorter than needed for this task.
-4. Save the token securely (e.g. a password manager) — it will only be shown once.
+- [ ] **Step 1: Verify the existing Personal Access Token is still valid**
+
+Run: `op item get vscode-marketplace-token --vault Personal`
+Expected: the item is found and not expired. If the item's expiry has passed, or `op` reports it can't find the item, stop and get a fresh token from `https://dev.azure.com` (User Settings → Personal Access Tokens, **Marketplace: Manage** scope) and update the 1Password item before continuing — don't silently work around a missing/expired token.
+
+Check which field on the item actually holds the token value: `op item get vscode-marketplace-token --vault Personal --format json` and look for the field label (commonly `credential` or `password` for an API Credential item type). Step 5 below assumes the field is named `credential` — adjust the `op read` path if it's actually named something else.
 
 - [ ] **Step 2 (manual, human): Create a Marketplace publisher**
 
@@ -1124,11 +1126,13 @@ esbuild.config.js
 pnpm-lock.yaml
 ```
 
-- [ ] **Step 5: Log in with `vsce` using the Personal Access Token**
+- [ ] **Step 5: Load the Personal Access Token into the environment via `op`**
 
-Run: `pnpm exec vsce login <publisher-id-from-step-2>`
-This will prompt for the Personal Access Token from Step 1 interactively — do not pass it as a command-line argument (it would end up in shell history).
-Expected: `Successfully logged in`.
+Run: `export VSCE_PAT="$(op read 'op://Personal/vscode-marketplace-token/credential')"`
+(Use the field name confirmed in Step 1 if it isn't `credential`.)
+Expected: the command succeeds silently (no output) and `VSCE_PAT` is set for the rest of this shell session. `vsce` reads `VSCE_PAT` from the environment automatically for both `package`/`publish` operations below — no separate `vsce login` step needed, and the token never appears as a command-line argument or gets typed interactively.
+
+Do not `echo "$VSCE_PAT"` or otherwise print it — treat it as a live secret for the rest of this task.
 
 - [ ] **Step 6: Package the extension and inspect the output**
 
