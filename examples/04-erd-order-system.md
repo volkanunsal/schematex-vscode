@@ -5,6 +5,7 @@ A minimal customer/order schema in crow's-foot notation, with per-diagram config
 ```schematex
 ---
 theme: dark
+backgroundColor: #fff
 ---
 erd
 title: "Order System"
