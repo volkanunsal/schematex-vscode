@@ -10,6 +10,8 @@
 }
 
 .schematex-zoom-viewport {
+  display: flex;
+  justify-content: center;
   overflow: hidden;
 }
 
