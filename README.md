@@ -39,7 +39,7 @@ See [Configuration reference](#configuration-reference) below for the full list 
 
 The DSL inside a `schematex` fence gets syntax highlighting while editing (comments, strings, numbers, diagram-type keywords, relationship operators, and attribute/config keys).
 
-Zoom with `Ctrl`/`Cmd`+scroll (zooms toward the cursor), or use the −/⟲/+ buttons that appear on hover in the top-left corner. Once zoomed in, click and drag the diagram to pan around it; the reset (⟲) button returns it to its original size and position.
+Diagrams too big to fit are scaled down to fit the preview by default (never clipped). Zoom with `Ctrl`/`Cmd`+scroll (zooms toward the cursor), or use the −/⟲/+ buttons that appear on hover in the top-left corner. Click and drag to pan once zoomed in, or hold `Ctrl`/`Cmd` and drag at any zoom level (the cursor turns into a hand while the key is held); the reset (⟲) button returns to the original fit-to-view size and position.
 
 ## Explanation
 

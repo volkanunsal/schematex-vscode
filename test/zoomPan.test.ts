@@ -3,7 +3,11 @@ import assert from "node:assert/strict";
 import { JSDOM } from "jsdom";
 import { attachZoomPan } from "../src/zoomPan";
 
-function makeViewport(width = 200, height = 100) {
+function makeViewport(
+  width = 200,
+  height = 100,
+  svgSize?: { width: number; height: number },
+) {
   const dom = new JSDOM("<!doctype html><html><body></body></html>");
   const document = dom.window.document;
 
@@ -27,6 +31,10 @@ function makeViewport(width = 200, height = 100) {
   });
 
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  if (svgSize) {
+    svg.setAttribute("width", String(svgSize.width));
+    svg.setAttribute("height", String(svgSize.height));
+  }
   viewport.appendChild(svg);
   diagramElement.appendChild(viewport);
   document.body.appendChild(diagramElement);
@@ -199,4 +207,137 @@ test("dragging pans only once zoomed in past scale 1; no-op at scale 1", () => {
 
   document.dispatchEvent(new window.MouseEvent("mouseup", { bubbles: true }));
   assert.equal(viewport.classList.contains("schematex-zoom-dragging"), false);
+});
+
+test("initial scale fits an oversized diagram entirely within the viewport, centered", () => {
+  // Viewport is 200x100; SVG is natively 400x100 (twice as wide as the
+  // viewport) -- the whole diagram must be visible by default, not clipped
+  // at scale 1.
+  const { diagramElement, viewport, svg } = makeViewport(200, 100, {
+    width: 400,
+    height: 100,
+  });
+  attachZoomPan(diagramElement, viewport, svg);
+
+  assert.equal(currentScale(svg), 0.5);
+  // Fit-to-width leaves no horizontal slack (translateX 0) and centers
+  // vertically (scaled height 50 inside a 100-tall viewport -> 25px each side).
+  assert.equal(svg.style.transform, "translate(0px, 25px) scale(0.5)");
+});
+
+test("initial scale stays at 1 (no upscaling) when the diagram already fits", () => {
+  const { diagramElement, viewport, svg } = makeViewport(200, 100, {
+    width: 100,
+    height: 50,
+  });
+  attachZoomPan(diagramElement, viewport, svg);
+
+  assert.equal(currentScale(svg), 1);
+});
+
+test("reset returns to the fit-to-view baseline, not always scale 1", () => {
+  const { diagramElement, viewport, svg, window } = makeViewport(200, 100, {
+    width: 400,
+    height: 100,
+  });
+  attachZoomPan(diagramElement, viewport, svg);
+  const fitTransform = svg.style.transform;
+
+  const zoomInButton = diagramElement.querySelector(
+    ".schematex-zoom-in",
+  ) as HTMLElement;
+  zoomInButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  assert.notEqual(svg.style.transform, fitTransform);
+
+  const resetButton = diagramElement.querySelector(
+    ".schematex-zoom-reset",
+  ) as HTMLElement;
+  resetButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  assert.equal(svg.style.transform, fitTransform);
+});
+
+test("Ctrl/Cmd+drag pans even at scale 1, unlike a plain drag", () => {
+  const { diagramElement, viewport, svg, document, window } = makeViewport();
+  attachZoomPan(diagramElement, viewport, svg);
+
+  // Plain drag at scale 1: no-op (covered by the earlier no-op test too).
+  viewport.dispatchEvent(
+    new window.MouseEvent("mousedown", { clientX: 0, clientY: 0, bubbles: true }),
+  );
+  assert.equal(viewport.classList.contains("schematex-zoom-dragging"), false);
+  document.dispatchEvent(new window.MouseEvent("mouseup", { bubbles: true }));
+
+  // Ctrl+drag at scale 1: pans.
+  viewport.dispatchEvent(
+    new window.MouseEvent("mousedown", {
+      clientX: 0,
+      clientY: 0,
+      ctrlKey: true,
+      bubbles: true,
+    }),
+  );
+  assert.equal(viewport.classList.contains("schematex-zoom-dragging"), true);
+  document.dispatchEvent(
+    new window.MouseEvent("mousemove", { clientX: 40, clientY: 10, bubbles: true }),
+  );
+  assert.equal(svg.style.transform, "translate(40px, 10px) scale(1)");
+  document.dispatchEvent(new window.MouseEvent("mouseup", { bubbles: true }));
+});
+
+test("Cmd+drag at scale 1 also pans (metaKey, not just ctrlKey)", () => {
+  const { diagramElement, viewport, svg, document, window } = makeViewport();
+  attachZoomPan(diagramElement, viewport, svg);
+
+  viewport.dispatchEvent(
+    new window.MouseEvent("mousedown", {
+      clientX: 0,
+      clientY: 0,
+      metaKey: true,
+      bubbles: true,
+    }),
+  );
+  assert.equal(viewport.classList.contains("schematex-zoom-dragging"), true);
+  document.dispatchEvent(new window.MouseEvent("mouseup", { bubbles: true }));
+});
+
+test("cursor becomes grab on hover while a pan modifier is held, even without clicking", () => {
+  const { diagramElement, viewport, svg, window } = makeViewport();
+  attachZoomPan(diagramElement, viewport, svg);
+
+  assert.equal(viewport.style.cursor, "default");
+
+  viewport.dispatchEvent(
+    new window.MouseEvent("mousemove", {
+      clientX: 5,
+      clientY: 5,
+      ctrlKey: true,
+      bubbles: true,
+    }),
+  );
+  assert.equal(viewport.style.cursor, "grab");
+
+  viewport.dispatchEvent(
+    new window.MouseEvent("mousemove", { clientX: 6, clientY: 6, bubbles: true }),
+  );
+  assert.equal(viewport.style.cursor, "default");
+});
+
+test("cursor is grabbing while actively dragging, and reverts to grab on mouseup with the modifier still held", () => {
+  const { diagramElement, viewport, svg, document, window } = makeViewport();
+  attachZoomPan(diagramElement, viewport, svg);
+
+  viewport.dispatchEvent(
+    new window.MouseEvent("mousedown", {
+      clientX: 0,
+      clientY: 0,
+      metaKey: true,
+      bubbles: true,
+    }),
+  );
+  assert.equal(viewport.style.cursor, "grabbing");
+
+  document.dispatchEvent(
+    new window.MouseEvent("mouseup", { metaKey: true, bubbles: true }),
+  );
+  assert.equal(viewport.style.cursor, "grab");
 });

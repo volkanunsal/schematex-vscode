@@ -12,18 +12,76 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+function getNaturalSize(
+  svg: SVGElement,
+): { width: number; height: number } | null {
+  const width = Number.parseFloat(svg.getAttribute("width") ?? "");
+  const height = Number.parseFloat(svg.getAttribute("height") ?? "");
+  if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+    return { width, height };
+  }
+
+  const viewBoxAttr = svg.getAttribute("viewBox");
+  if (viewBoxAttr) {
+    const parts = viewBoxAttr.trim().split(/[\s,]+/).map(Number);
+    if (
+      parts.length === 4 &&
+      parts.every((value) => Number.isFinite(value)) &&
+      parts[2] > 0 &&
+      parts[3] > 0
+    ) {
+      return { width: parts[2], height: parts[3] };
+    }
+  }
+
+  return null;
+}
+
+function computeFitState(
+  svg: SVGElement,
+  viewport: HTMLElement,
+): ZoomPanState {
+  const naturalSize = getNaturalSize(svg);
+  const rect = viewport.getBoundingClientRect();
+  if (!naturalSize || rect.width <= 0 || rect.height <= 0) {
+    return { scale: 1, translateX: 0, translateY: 0 };
+  }
+
+  const fitScale = Math.min(
+    rect.width / naturalSize.width,
+    rect.height / naturalSize.height,
+    1,
+  );
+  const scaledWidth = naturalSize.width * fitScale;
+  const scaledHeight = naturalSize.height * fitScale;
+  return {
+    scale: fitScale,
+    translateX: Math.max(0, (rect.width - scaledWidth) / 2),
+    translateY: Math.max(0, (rect.height - scaledHeight) / 2),
+  };
+}
+
+function isPanModifierPressed(event: MouseEvent): boolean {
+  return event.metaKey || event.ctrlKey;
+}
+
 export function attachZoomPan(
   diagramElement: HTMLElement,
   viewport: HTMLElement,
   svg: SVGElement,
 ): void {
   const ownerDocument = diagramElement.ownerDocument;
-  const state: ZoomPanState = { scale: 1, translateX: 0, translateY: 0 };
+  const initialState = computeFitState(svg, viewport);
+  const state: ZoomPanState = { ...initialState };
 
   function applyTransform(): void {
     svg.style.transformOrigin = "0 0";
     svg.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`;
-    viewport.style.cursor = state.scale > 1 ? "grab" : "default";
+  }
+
+  function updateIdleCursor(event?: MouseEvent): void {
+    const canPan = state.scale > 1 || (event ? isPanModifierPressed(event) : false);
+    viewport.style.cursor = canPan ? "grab" : "default";
   }
 
   function zoomAt(anchorX: number, anchorY: number, factor: number): void {
@@ -44,9 +102,9 @@ export function attachZoomPan(
   }
 
   function reset(): void {
-    state.scale = 1;
-    state.translateX = 0;
-    state.translateY = 0;
+    state.scale = initialState.scale;
+    state.translateX = initialState.translateX;
+    state.translateY = initialState.translateY;
     applyTransform();
   }
 
@@ -104,7 +162,7 @@ export function attachZoomPan(
   let dragStartTranslateY = 0;
 
   viewport.addEventListener("mousedown", (event: MouseEvent) => {
-    if (state.scale <= 1) {
+    if (state.scale <= 1 && !isPanModifierPressed(event)) {
       return;
     }
     dragging = true;
@@ -116,6 +174,12 @@ export function attachZoomPan(
     viewport.style.cursor = "grabbing";
   });
 
+  viewport.addEventListener("mousemove", (event: MouseEvent) => {
+    if (!dragging) {
+      updateIdleCursor(event);
+    }
+  });
+
   ownerDocument.addEventListener("mousemove", (event: MouseEvent) => {
     if (!dragging) {
       return;
@@ -123,17 +187,17 @@ export function attachZoomPan(
     state.translateX = dragStartTranslateX + (event.clientX - dragStartClientX);
     state.translateY = dragStartTranslateY + (event.clientY - dragStartClientY);
     applyTransform();
-    viewport.style.cursor = "grabbing";
   });
 
-  ownerDocument.addEventListener("mouseup", () => {
+  ownerDocument.addEventListener("mouseup", (event: MouseEvent) => {
     if (!dragging) {
       return;
     }
     dragging = false;
     viewport.classList.remove("schematex-zoom-dragging");
-    applyTransform();
+    updateIdleCursor(event);
   });
 
   applyTransform();
+  updateIdleCursor();
 }
