@@ -1,3 +1,5 @@
+import { attachZoomPan } from "./zoomPan";
+
 export interface RendererDeps {
   renderPreviewToContainer: (
     text: string,
@@ -150,6 +152,16 @@ export function createRenderer(deps: RendererDeps): {
         ...schematexConfig,
         mode: "preview",
       });
+
+      const svg = element.querySelector("svg");
+      if (svg) {
+        const viewport = element.ownerDocument.createElement("div");
+        viewport.className = "schematex-zoom-viewport";
+        viewport.appendChild(svg);
+        element.appendChild(viewport);
+        attachZoomPan(element, viewport, svg);
+      }
+
       attachExportButtons(element, source, schematexConfig, backgroundColor);
     } catch (renderError) {
       logDiagnostic("render threw", {

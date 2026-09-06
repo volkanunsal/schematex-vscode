@@ -41,6 +41,8 @@ The DSL inside a `schematex` fence gets syntax highlighting while editing (comme
 
 Hover over a rendered diagram to reveal a small ⚙ button in the top-right corner; click it to open a menu with "Export PNG" and "Export PDF" options, for saving the diagram as an image or a print-ready PDF.
 
+Zoom with `Ctrl`/`Cmd`+scroll (zooms toward the cursor), or use the −/⟲/+ buttons that appear on hover in the top-left corner. Once zoomed in, click and drag the diagram to pan around it; the reset (⟲) button returns it to its original size and position.
+
 ## Explanation
 
 ### What is SchemaTex

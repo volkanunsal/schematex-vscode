@@ -9,6 +9,45 @@
   height: auto;
 }
 
+.schematex-zoom-viewport {
+  overflow: hidden;
+  max-height: 70vh;
+}
+
+.schematex-zoom-viewport svg {
+  display: block;
+}
+
+.schematex-zoom-controls {
+  position: absolute;
+  top: 0.25em;
+  left: 0.25em;
+  z-index: 1;
+  display: flex;
+  gap: 0.25em;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s ease-in-out;
+}
+
+.schematex-diagram:hover .schematex-zoom-controls {
+  opacity: 1;
+  visibility: visible;
+}
+
+.schematex-zoom-controls button {
+  width: 1.8em;
+  height: 1.8em;
+  padding: 0;
+  border: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
+  border-radius: 4px;
+  background: var(--vscode-editor-background, #fff);
+  color: var(--vscode-foreground, inherit);
+  font-size: 1em;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .schematex-export-toggle-wrap {
   position: absolute;
   top: 0.25em;

@@ -66,7 +66,9 @@ test("renders a diagram container, passing decoded source and config with mode f
   assert.equal(received?.text, "Genogram\n  Alice -- Bob\n");
   assert.equal(received?.config.theme, "dark");
   assert.equal(received?.config.mode, "preview");
-  assert.match(element.innerHTML, /<svg><\/svg>/);
+  // The rendered SVG gets moved into a .schematex-zoom-viewport wrapper for
+  // pan/zoom, so it's no longer a direct, unwrapped child.
+  assert.ok(element.querySelector(".schematex-zoom-viewport svg"));
 });
 
 test("applies backgroundColor as an inline style and does not forward it to schematex", () => {
