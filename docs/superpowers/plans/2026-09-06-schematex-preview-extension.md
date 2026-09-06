@@ -990,10 +990,7 @@ Expected: all checks pass. If any function name/signature from `schematex/browse
 
 ```bash
 git add src/previewScript.ts media/previewStyles.css
-git commit -m "Wire preview script bundle entry and diagram/error styles
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
+git commit -m "Wire preview script bundle entry and diagram/error styles"
 ```
 
 - [ ] **Step 6: Push**
@@ -1060,10 +1057,7 @@ Invoke the `documentation-writing` skill (Diátaxis framework) to rewrite `READM
 
 ```bash
 git add media/icon.png media/logo.png package.json README.md
-git commit -m "Add extension icon/logo and marketplace-ready README
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
+git commit -m "Add extension icon/logo and marketplace-ready README"
 ```
 
 - [ ] **Step 6: Push**
@@ -1155,10 +1149,7 @@ Replace the placeholder `<publisher>` in the Marketplace version badge (added in
 
 ```bash
 git add package.json .vscodeignore README.md pnpm-lock.yaml
-git commit -m "Add VS Code Marketplace publishing config and publish v0.1.0
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
+git commit -m "Add VS Code Marketplace publishing config and publish v0.1.0"
 git push origin HEAD
 ```
 
