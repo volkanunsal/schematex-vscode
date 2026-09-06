@@ -1100,6 +1100,8 @@ Marketplace publishing has manual, one-time account-setup steps that can't be au
 
 - [ ] **Step 3: Add the publisher id to `package.json` and install the packaging CLI**
 
+Merge this key into the existing `package.json` object (do not replace the whole file — it already has `name`, `dependencies`, `contributes.icon`, etc. from earlier tasks).
+
 ```json
 {
   "publisher": "<publisher-id-from-step-2>"
