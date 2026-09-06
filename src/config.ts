@@ -20,6 +20,15 @@ const allowedKeys = new Set([
   "backgroundColor",
 ]);
 
+function stripSurroundingQuotes(value: string): string {
+  const isDoubleQuoted = value.length >= 2 && value.startsWith('"') && value.endsWith('"');
+  const isSingleQuoted = value.length >= 2 && value.startsWith("'") && value.endsWith("'");
+  if (isDoubleQuoted || isSingleQuoted) {
+    return value.slice(1, -1);
+  }
+  return value;
+}
+
 export function parseConfigHeader(raw: string): {
   config: SchematexConfig;
   body: string;
@@ -61,7 +70,7 @@ export function parseConfigHeader(raw: string): {
     } else if (booleanKeys.has(key)) {
       config[key] = rawValue.trim() === "true";
     } else {
-      config[key] = rawValue.trim();
+      config[key] = stripSurroundingQuotes(rawValue.trim());
     }
   }
 

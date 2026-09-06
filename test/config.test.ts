@@ -35,6 +35,27 @@ test("parses backgroundColor as a string", () => {
   assert.deepEqual(config, { backgroundColor: "#f5f5f5" });
 });
 
+test("strips surrounding double or single quotes from string values", () => {
+  const doubleQuoted = parseConfigHeader(
+    '---\nbackgroundColor: "#f5f5f5"\ntheme: "dark"\n---\nGenogram\n',
+  );
+  assert.deepEqual(doubleQuoted.config, {
+    backgroundColor: "#f5f5f5",
+    theme: "dark",
+  });
+
+  const singleQuoted = parseConfigHeader(
+    "---\nbackgroundColor: '#f5f5f5'\n---\nGenogram\n",
+  );
+  assert.deepEqual(singleQuoted.config, { backgroundColor: "#f5f5f5" });
+});
+
+test("does not strip a lone quote character or mismatched quotes", () => {
+  const raw = '---\nfontFamily: "Georgia\n---\nGenogram\n';
+  const { config } = parseConfigHeader(raw);
+  assert.deepEqual(config, { fontFamily: '"Georgia' });
+});
+
 test("treats an unterminated config header as no header at all", () => {
   const raw = "---\ntheme: dark\nGenogram\n  Alice -- Bob\n";
   const { config, body } = parseConfigHeader(raw);
