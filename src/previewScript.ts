@@ -1,13 +1,8 @@
-import { renderPreviewToContainer, renderPreview } from "schematex/browser";
-import { svgToPngBlob, downloadBlob, printSvgAsPdf } from "schematex/export";
+import { renderPreviewToContainer } from "schematex/browser";
 import { createRenderer } from "./renderer";
 
 const renderer = createRenderer({
   renderPreviewToContainer,
-  renderPreview,
-  svgToPngBlob,
-  downloadBlob,
-  printSvgAsPdf,
 });
 
 renderer.renderAll(document);

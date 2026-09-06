@@ -48,66 +48,6 @@
   cursor: pointer;
 }
 
-.schematex-export-toggle-wrap {
-  position: absolute;
-  top: 0.25em;
-  right: 0.25em;
-  z-index: 1;
-}
-
-.schematex-export-toggle {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.1s ease-in-out;
-  width: 1.8em;
-  height: 1.8em;
-  padding: 0;
-  border: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
-  border-radius: 4px;
-  background: var(--vscode-editor-background, #fff);
-  color: var(--vscode-foreground, inherit);
-  font-size: 1em;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.schematex-diagram:hover .schematex-export-toggle {
-  opacity: 1;
-  visibility: visible;
-}
-
-.schematex-export-menu {
-  display: none;
-  position: absolute;
-  top: calc(100% + 0.25em);
-  right: 0;
-  flex-direction: column;
-  min-width: 8em;
-  border: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
-  border-radius: 4px;
-  background: var(--vscode-editor-background, #fff);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
-
-.schematex-export-toggle-wrap:hover .schematex-export-menu {
-  display: flex;
-}
-
-.schematex-export-item {
-  padding: 0.4em 0.8em;
-  border: none;
-  background: none;
-  color: var(--vscode-foreground, inherit);
-  font-size: 0.85em;
-  text-align: left;
-  cursor: pointer;
-}
-
-.schematex-export-item:hover {
-  background: var(--vscode-list-hoverBackground, rgba(128, 128, 128, 0.15));
-}
-
 .schematex-error {
   border: 1px solid var(--vscode-inputValidation-errorBorder, #a1260d);
   background: var(

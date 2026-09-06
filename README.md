@@ -39,8 +39,6 @@ See [Configuration reference](#configuration-reference) below for the full list 
 
 The DSL inside a `schematex` fence gets syntax highlighting while editing (comments, strings, numbers, diagram-type keywords, relationship operators, and attribute/config keys).
 
-Hover over a rendered diagram to reveal a small ⚙ button in the top-right corner; click it to open a menu with "Export PNG" and "Export PDF" options, for saving the diagram as an image or a print-ready PDF.
-
 Zoom with `Ctrl`/`Cmd`+scroll (zooms toward the cursor), or use the −/⟲/+ buttons that appear on hover in the top-left corner. Once zoomed in, click and drag the diagram to pan around it; the reset (⟲) button returns it to its original size and position.
 
 ## Explanation
@@ -65,7 +63,7 @@ Config keys go in the optional `---`-delimited header at the top of a `schematex
 | `height`          | number  | Rendered diagram height, in pixels.                                                                                                                                                                                                                         |
 | `padding`         | number  | Padding around the diagram content, in pixels.                                                                                                                                                                                                              |
 | `scene`           | boolean | Opt in to derived geometry/source metadata and `data-sx-*` SVG hooks on the rendered diagram.                                                                                                                                                               |
-| `backgroundColor` | string  | Background color behind the diagram (e.g. `#f5f5f5`, `transparent`). Applied as the preview container's background, and used as the fill when exporting to PNG (falls back to white if unset). Not a SchemaTex option — handled entirely by this extension. |
+| `backgroundColor` | string  | Background color behind the diagram (e.g. `#f5f5f5`, `transparent`). Applied as the preview container's background. Not a SchemaTex option — handled entirely by this extension. |
 
 ## License
 
