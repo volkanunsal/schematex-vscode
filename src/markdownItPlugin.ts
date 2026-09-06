@@ -1,17 +1,21 @@
+import * as MarkdownItModule from "markdown-it";
+import type { RendererRule } from "markdown-it";
 import { parseConfigHeader } from "./config";
 
-export function schematexPlugin(markdownItInstance: any): void {
+type MarkdownItInstance = ReturnType<typeof MarkdownItModule.default>;
+
+export function schematexPlugin(markdownItInstance: MarkdownItInstance): void {
   const defaultFenceRenderer = markdownItInstance.renderer.rules.fence!.bind(
     markdownItInstance.renderer.rules,
   );
 
-  markdownItInstance.renderer.rules.fence = (
-    tokens: any,
-    tokenIndex: any,
-    options: any,
-    env: any,
-    self: any,
-  ): string => {
+  const schematexFenceRenderer: RendererRule = (
+    tokens,
+    tokenIndex,
+    options,
+    env,
+    self,
+  ) => {
     const token = tokens[tokenIndex];
     const fenceInfo = token.info.trim();
 
@@ -27,4 +31,6 @@ export function schematexPlugin(markdownItInstance: any): void {
 
     return `<div class="schematex-diagram" data-source="${encodedSource}" data-config="${encodedConfig}"></div>\n`;
   };
+
+  markdownItInstance.renderer.rules.fence = schematexFenceRenderer;
 }
