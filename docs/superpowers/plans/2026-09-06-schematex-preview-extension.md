@@ -186,12 +186,15 @@ export function deactivate(): void {}
 
 - [ ] **Step 6: Write `.gitignore`**
 
+If `.gitignore` already exists with a `.worktrees/` entry (from workspace setup), keep that line and add the entries below to the same file rather than overwriting it.
+
 ```
 node_modules/
 dist/
 media/previewScript.js
 media/previewScript.js.map
 *.vsix
+.worktrees/
 ```
 
 - [ ] **Step 7: Fetch the official AGPL-3.0 license text into `LICENSE`**
