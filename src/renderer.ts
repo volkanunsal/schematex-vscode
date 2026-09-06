@@ -43,17 +43,59 @@ export function createRenderer(deps: RendererDeps): {
     source: string,
     config: Record<string, unknown>,
   ): void {
-    if (element.querySelector(".schematex-export-bar")) {
+    if (element.querySelector(".schematex-export-toggle")) {
       return;
     }
 
     const ownerDocument = element.ownerDocument;
-    const exportBar = ownerDocument.createElement("div");
-    exportBar.className = "schematex-export-bar";
 
-    const exportPngButton = ownerDocument.createElement("button");
-    exportPngButton.textContent = "Export PNG";
-    exportPngButton.addEventListener("click", async () => {
+    const toggleButton = ownerDocument.createElement("button");
+    toggleButton.type = "button";
+    toggleButton.className = "schematex-export-toggle";
+    toggleButton.setAttribute("aria-label", "Export diagram");
+    toggleButton.setAttribute("aria-haspopup", "true");
+    toggleButton.setAttribute("aria-expanded", "false");
+    toggleButton.textContent = "⚙";
+
+    const menu = ownerDocument.createElement("div");
+    menu.className = "schematex-export-menu";
+    menu.hidden = true;
+
+    function handleOutsideClick(event: Event): void {
+      const target = event.target as Node | null;
+      if (target && !menu.contains(target) && target !== toggleButton) {
+        closeMenu();
+      }
+    }
+
+    function closeMenu(): void {
+      menu.hidden = true;
+      toggleButton.setAttribute("aria-expanded", "false");
+      ownerDocument.removeEventListener("click", handleOutsideClick, true);
+    }
+
+    function openMenu(): void {
+      menu.hidden = false;
+      toggleButton.setAttribute("aria-expanded", "true");
+      ownerDocument.addEventListener("click", handleOutsideClick, true);
+    }
+
+    toggleButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (menu.hidden) {
+        openMenu();
+      } else {
+        closeMenu();
+      }
+    });
+
+    const exportPngItem = ownerDocument.createElement("button");
+    exportPngItem.type = "button";
+    exportPngItem.className = "schematex-export-item";
+    exportPngItem.textContent = "Export PNG";
+    exportPngItem.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      closeMenu();
       try {
         const svgMarkup = deps.renderPreview(source, {
           ...config,
@@ -69,9 +111,13 @@ export function createRenderer(deps: RendererDeps): {
       }
     });
 
-    const exportPdfButton = ownerDocument.createElement("button");
-    exportPdfButton.textContent = "Export PDF";
-    exportPdfButton.addEventListener("click", () => {
+    const exportPdfItem = ownerDocument.createElement("button");
+    exportPdfItem.type = "button";
+    exportPdfItem.className = "schematex-export-item";
+    exportPdfItem.textContent = "Export PDF";
+    exportPdfItem.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeMenu();
       try {
         const svgMarkup = deps.renderPreview(source, {
           ...config,
@@ -83,8 +129,12 @@ export function createRenderer(deps: RendererDeps): {
       }
     });
 
-    exportBar.append(exportPngButton, exportPdfButton);
-    element.prepend(exportBar);
+    menu.append(exportPngItem, exportPdfItem);
+
+    const toggleWrap = ownerDocument.createElement("div");
+    toggleWrap.className = "schematex-export-toggle-wrap";
+    toggleWrap.append(toggleButton, menu);
+    element.prepend(toggleWrap);
   }
 
   function renderOne(element: HTMLElement): void {

@@ -1,4 +1,5 @@
 .schematex-diagram {
+  position: relative;
   margin: 1em 0;
   overflow-x: auto;
 }
@@ -8,16 +9,61 @@
   height: auto;
 }
 
-.schematex-export-bar {
-  display: flex;
-  gap: 0.5em;
-  margin-bottom: 0.5em;
+.schematex-export-toggle-wrap {
+  position: absolute;
+  top: 0.25em;
+  right: 0.25em;
+  z-index: 1;
 }
 
-.schematex-export-bar button {
-  font-size: 0.85em;
-  padding: 2px 8px;
+.schematex-export-toggle {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s ease-in-out;
+  width: 1.8em;
+  height: 1.8em;
+  padding: 0;
+  border: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
+  border-radius: 4px;
+  background: var(--vscode-editor-background, #fff);
+  color: var(--vscode-foreground, inherit);
+  font-size: 1em;
+  line-height: 1;
   cursor: pointer;
+}
+
+.schematex-diagram:hover .schematex-export-toggle,
+.schematex-export-toggle[aria-expanded="true"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.schematex-export-menu {
+  position: absolute;
+  top: calc(100% + 0.25em);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 8em;
+  border: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
+  border-radius: 4px;
+  background: var(--vscode-editor-background, #fff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.schematex-export-item {
+  padding: 0.4em 0.8em;
+  border: none;
+  background: none;
+  color: var(--vscode-foreground, inherit);
+  font-size: 0.85em;
+  text-align: left;
+  cursor: pointer;
+}
+
+.schematex-export-item:hover {
+  background: var(--vscode-list-hoverBackground, rgba(128, 128, 128, 0.15));
 }
 
 .schematex-error {

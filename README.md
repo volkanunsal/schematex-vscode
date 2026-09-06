@@ -37,7 +37,7 @@ Genogram
 
 See [Configuration reference](#configuration-reference) below for the full list of supported keys.
 
-Each rendered diagram has "Export PNG" and "Export PDF" buttons above it, for saving the diagram as an image or a print-ready PDF.
+Hover over a rendered diagram to reveal a small ⚙ button in the top-right corner; click it to open a menu with "Export PNG" and "Export PDF" options, for saving the diagram as an image or a print-ready PDF.
 
 ## Explanation
 

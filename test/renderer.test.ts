@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { JSDOM } from "jsdom";
+import { JSDOM, type DOMWindow } from "jsdom";
 import { createRenderer, type RendererDeps } from "../src/renderer";
 
 function makeDiagramContainer(
@@ -112,7 +112,82 @@ test("shows an inline error card when decoding the container's attributes fails,
   assert.match(element.innerHTML, /boom/);
 });
 
-test("adds working Export PNG and Export PDF buttons after a successful render, forcing mode: preview", async () => {
+function openExportMenu(element: HTMLElement, window: DOMWindow): void {
+  const toggle = element.querySelector(
+    ".schematex-export-toggle",
+  ) as HTMLElement;
+  toggle.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+}
+
+test("export toggle button is present but the menu starts closed", () => {
+  const { document, element } = makeDiagramContainer("Genogram\n");
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container) => {
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+    }),
+  );
+
+  renderer.renderAll(document);
+
+  const toggle = element.querySelector(".schematex-export-toggle");
+  const menu = element.querySelector(".schematex-export-menu") as HTMLElement;
+  assert.ok(toggle);
+  assert.equal(menu.hidden, true);
+  assert.equal(toggle?.getAttribute("aria-expanded"), "false");
+});
+
+test("clicking the toggle opens the menu; clicking it again closes it", () => {
+  const { document, element, window } = makeDiagramContainer("Genogram\n");
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container) => {
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+    }),
+  );
+
+  renderer.renderAll(document);
+
+  const toggle = element.querySelector(
+    ".schematex-export-toggle",
+  ) as HTMLElement;
+  const menu = element.querySelector(".schematex-export-menu") as HTMLElement;
+
+  openExportMenu(element, window);
+  assert.equal(menu.hidden, false);
+  assert.equal(toggle.getAttribute("aria-expanded"), "true");
+
+  toggle.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  assert.equal(menu.hidden, true);
+  assert.equal(toggle.getAttribute("aria-expanded"), "false");
+});
+
+test("clicking outside the menu closes it", () => {
+  const { document, element, window } = makeDiagramContainer("Genogram\n");
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container) => {
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+    }),
+  );
+
+  renderer.renderAll(document);
+  openExportMenu(element, window);
+
+  const menu = element.querySelector(".schematex-export-menu") as HTMLElement;
+  assert.equal(menu.hidden, false);
+
+  document.body.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  assert.equal(menu.hidden, true);
+});
+
+test("opening the menu and clicking Export PNG/PDF runs the export and closes the menu, forcing mode: preview", async () => {
   const { document, element, window } = makeDiagramContainer("Genogram\n", {
     theme: "dark",
   });
@@ -144,24 +219,29 @@ test("adds working Export PNG and Export PDF buttons after a successful render, 
 
   renderer.renderAll(document);
 
-  const buttons = element.querySelectorAll(".schematex-export-bar button");
-  assert.equal(buttons.length, 2);
+  openExportMenu(element, window);
+  const menu = element.querySelector(".schematex-export-menu") as HTMLElement;
+  const items = menu.querySelectorAll(".schematex-export-item");
+  assert.equal(items.length, 2);
 
-  (buttons[0] as HTMLElement).dispatchEvent(
+  (items[0] as HTMLElement).dispatchEvent(
     new window.MouseEvent("click", { bubbles: true }),
   );
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.deepEqual(calls, ["renderPreview", "svgToPngBlob", "downloadBlob"]);
   assert.equal(receivedConfigs[0]?.mode, "preview");
   assert.equal(receivedConfigs[0]?.theme, "dark");
+  assert.equal(menu.hidden, true);
 
   calls.length = 0;
-  (buttons[1] as HTMLElement).dispatchEvent(
+  openExportMenu(element, window);
+  (items[1] as HTMLElement).dispatchEvent(
     new window.MouseEvent("click", { bubbles: true }),
   );
   assert.deepEqual(calls, ["renderPreview", "printSvgAsPdf"]);
   assert.equal(receivedConfigs[1]?.mode, "preview");
   assert.equal(receivedConfigs[1]?.theme, "dark");
+  assert.equal(menu.hidden, true);
 });
 
 test("shows an inline error card instead of an unhandled rejection when Export PNG's renderPreview throws", async () => {
@@ -180,10 +260,11 @@ test("shows an inline error card instead of an unhandled rejection when Export P
 
   renderer.renderAll(document);
 
-  const pngButton = element.querySelector(
-    ".schematex-export-bar button",
+  openExportMenu(element, window);
+  const pngItem = element.querySelector(
+    ".schematex-export-item",
   ) as HTMLElement;
-  pngButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  pngItem.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   assert.match(element.innerHTML, /schematex-error/);
@@ -206,9 +287,10 @@ test("shows an inline error card instead of an uncaught throw when Export PDF's 
 
   renderer.renderAll(document);
 
-  const buttons = element.querySelectorAll(".schematex-export-bar button");
-  const pdfButton = buttons[1] as HTMLElement;
-  pdfButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  openExportMenu(element, window);
+  const items = element.querySelectorAll(".schematex-export-item");
+  const pdfItem = items[1] as HTMLElement;
+  pdfItem.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 
   assert.match(element.innerHTML, /schematex-error/);
   assert.match(element.innerHTML, /print failed/);
@@ -230,10 +312,11 @@ test("shows an inline error card when Export PNG's svgToPngBlob rejects", async 
 
   renderer.renderAll(document);
 
-  const pngButton = element.querySelector(
-    ".schematex-export-bar button",
+  openExportMenu(element, window);
+  const pngItem = element.querySelector(
+    ".schematex-export-item",
   ) as HTMLElement;
-  pngButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  pngItem.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   assert.match(element.innerHTML, /schematex-error/);
