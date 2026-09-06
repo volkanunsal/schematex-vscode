@@ -9,8 +9,7 @@
     { "include": "#strings" },
     { "include": "#numbers" },
     { "include": "#operators" },
-    { "include": "#brackets" },
-    { "include": "#attribute-key" }
+    { "include": "#brackets" }
   ],
   "repository": {
     "comments": {
@@ -87,12 +86,21 @@
     "brackets": {
       "patterns": [
         {
-          "name": "punctuation.definition.attributes.begin.schematex",
-          "match": "\\["
-        },
-        {
-          "name": "punctuation.definition.attributes.end.schematex",
-          "match": "\\]"
+          "name": "meta.attributes.schematex",
+          "begin": "\\[",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.attributes.begin.schematex" }
+          },
+          "end": "\\]",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.attributes.end.schematex" }
+          },
+          "patterns": [
+            { "include": "#strings" },
+            { "include": "#numbers" },
+            { "include": "#operators" },
+            { "include": "#attribute-key" }
+          ]
         },
         {
           "name": "punctuation.definition.block.begin.schematex",
