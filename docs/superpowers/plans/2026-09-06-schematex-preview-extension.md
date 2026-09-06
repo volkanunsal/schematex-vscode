@@ -1073,10 +1073,15 @@ The Azure DevOps Personal Access Token already exists and is saved in 1Password:
 
 - [ ] **Step 1: Verify the existing Personal Access Token is still valid**
 
-Run: `op item get "Azure Personal Access Token" --vault Personal`
-Expected: the item is found and not expired. If the item's expiry has passed, or `op` reports it can't find the item, stop and get a fresh token from `https://dev.azure.com` (User Settings → Personal Access Tokens, **Marketplace: Manage** scope) and update the 1Password item before continuing — don't silently work around a missing/expired token.
+**Never run `op item get "Azure Personal Access Token" ...` bare (with or without `--format json`) and let its output reach the terminal/transcript unfiltered — 1Password's default output includes the credential field's plaintext value, and that value has no business appearing anywhere except directly inside `VSCE_PAT` in Step 5. A prior run of this exact step leaked the token into a subagent's local transcript file this way (contained, not committed, but real — the token was rotated afterward as a precaution).**
 
-Check which field on the item actually holds the token value: `op item get "Azure Personal Access Token" --vault Personal --format json` and look for the field label (commonly `credential` or `password` for an API Credential item type). Step 5 below assumes the field is named `credential` — adjust the `op read` path if it's actually named something else.
+Check the item exists and its expiry, without ever printing field values, by filtering to just non-secret metadata:
+
+Run: `op item get "Azure Personal Access Token" --vault Personal --format json | jq -r '{title, category, fields: [.fields[] | {label, purpose, type}]}'`
+
+This shows the item's title/category and each field's `label`/`purpose`/`type` only (never `.value`) — use it to confirm the item exists and to find which field label holds the credential (commonly `credential` or `password` for an API Credential item type; the `type` will be `CONCEALED`). Step 5 below assumes the field is named `credential` — adjust the `op read` path if it's actually named something else.
+
+To check expiry specifically (also safe — expiry is not a secret): `op item get "Azure Personal Access Token" --vault Personal --format json | jq -r '.fields[] | select(.label == "expires") | .value'` (adjust the label if the item's expiry field is named differently, or check for it in the field list above). If the item's expiry has passed, or `op` reports it can't find the item, stop and get a fresh token from `https://dev.azure.com` (User Settings → Personal Access Tokens, **Marketplace: Manage** scope) and update the 1Password item before continuing — don't silently work around a missing/expired token.
 
 - [x] **Step 2 (manual, human): Create a Marketplace publisher** — already done. Publisher id is `VolkanUnsal`.
 
