@@ -250,10 +250,7 @@ Expected: exits 0, creates `dist/extension.js` and `media/previewScript.js` (the
 
 ```bash
 git add package.json tsconfig.json esbuild.config.js src/extension.ts src/previewScript.ts .vscode/launch.json .gitignore LICENSE README.md pnpm-lock.yaml
-git commit -m "Scaffold SchemaTex VS Code extension project and build pipeline
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
+git commit -m "Scaffold SchemaTex VS Code extension project and build pipeline"
 ```
 
 - [ ] **Step 12: Push to the already-created GitHub remote**
@@ -410,10 +407,7 @@ Expected: PASS, all 5 tests in `test/config.test.ts` green.
 
 ```bash
 git add src/config.ts test/config.test.ts
-git commit -m "Add per-diagram config header parsing
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
+git commit -m "Add per-diagram config header parsing"
 ```
 
 - [ ] **Step 6: Push**
@@ -563,10 +557,7 @@ Expected: exits 0.
 
 ```bash
 git add src/markdownItPlugin.ts src/extension.ts test/markdownItPlugin.test.ts package.json pnpm-lock.yaml
-git commit -m "Add markdown-it plugin for schematex fences and wire into extension
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
+git commit -m "Add markdown-it plugin for schematex fences and wire into extension"
 ```
 
 - [ ] **Step 9: Push**
@@ -866,10 +857,7 @@ Expected: PASS, all 4 tests in `test/renderer.test.ts` green, plus all earlier t
 
 ```bash
 git add src/renderer.ts test/renderer.test.ts
-git commit -m "Add preview renderer core with error handling and PNG/PDF export
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
+git commit -m "Add preview renderer core with error handling and PNG/PDF export"
 ```
 
 - [ ] **Step 7: Push**
