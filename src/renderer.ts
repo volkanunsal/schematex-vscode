@@ -1,4 +1,3 @@
-// src/renderer.ts
 export interface RendererDeps {
   renderPreviewToContainer: (
     text: string,
