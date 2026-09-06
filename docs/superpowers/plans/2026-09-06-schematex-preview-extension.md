@@ -17,7 +17,7 @@
 - Use descriptive variable names throughout (user's standing preference).
 - No comments in generated code unless required by the language/tooling (e.g. a `// @ts-expect-error` with reason).
 - `schematex` npm package (verified against the published registry, v1.0.14): browser build at subpath `schematex/browser` exports `renderPreviewToContainer(text: string, container: Element, config?: SchematexConfig): void` and `renderPreview(text: string, config?: SchematexConfig): string`; `SchematexConfig` has fields `type?, width?, height?, padding?, theme?, fontFamily?, mode?: "strict"|"preview", scene?`. Export helpers at subpath `schematex/export`: `svgToPngBlob(svgString: string, options?: { scale?: number; background?: string | null }): Promise<Blob>`, `downloadBlob(blob: Blob, filename: string): void`, `printSvgAsPdf(svgString: string, title?: string): void`. Every task below argues from these exact signatures — do not substitute assumed ones.
-- After every task's commit (starting from Task 1's), push to the `origin` remote: `git push origin main`. The remote is created in Task 1's Step 12, below. This keeps the GitHub repo an incremental, near-real-time record of the work rather than a single dump at the end.
+- After every task's commit (starting from Task 1's), push to the `origin` remote's copy of the current branch: `git push origin HEAD`. Implementation happens on an isolated worktree/feature branch (not `main`), so this pushes that branch, not `main` — see the SDD ledger's ruling on this. This keeps the GitHub repo an incremental, near-real-time record of the work rather than a single dump at the end.
 - Any image generation (the extension/marketplace/README logo, Task 6) MUST go through the `nano-banana` skill, not an ad hoc image call — this is a standing tool requirement, not specific to this plan.
 - README content (Task 6) MUST go through the `documentation-writing` skill (Diátaxis framework) per explicit user instruction.
 
@@ -264,7 +264,7 @@ Run: `git remote -v`
 Expected: `origin` is listed with a `github.com` URL.
 
 Run: `git push -u origin main`
-Expected: `main` branch pushed, upstream tracking set — every subsequent task's commit only needs `git push origin main` from here on (see Global Constraints).
+Expected: the current branch pushed to `origin` with upstream tracking set — every subsequent task's commit only needs `git push origin HEAD` from here on (see Global Constraints).
 
 ---
 
@@ -418,7 +418,7 @@ Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
 
 - [ ] **Step 6: Push**
 
-Run: `git push origin main`
+Run: `git push origin HEAD`
 
 ---
 
@@ -571,7 +571,7 @@ Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
 
 - [ ] **Step 9: Push**
 
-Run: `git push origin main`
+Run: `git push origin HEAD`
 
 ---
 
@@ -874,7 +874,7 @@ Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
 
 - [ ] **Step 7: Push**
 
-Run: `git push origin main`
+Run: `git push origin HEAD`
 
 ---
 
@@ -998,7 +998,7 @@ Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
 
 - [ ] **Step 6: Push**
 
-Run: `git push origin main`
+Run: `git push origin HEAD`
 
 ---
 
@@ -1068,7 +1068,7 @@ Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
 
 - [ ] **Step 6: Push**
 
-Run: `git push origin main`
+Run: `git push origin HEAD`
 
 ---
 
@@ -1155,7 +1155,7 @@ git commit -m "Add VS Code Marketplace publishing config and publish v0.1.0
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01MvHH4uaaFYPEZDDCoE3s56"
-git push origin main
+git push origin HEAD
 ```
 
 ---
