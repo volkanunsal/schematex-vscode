@@ -43,6 +43,13 @@ See the [`examples/`](./examples) directory for a short, renderable sample of ev
 
 Zoom with `Ctrl`/`Cmd`+scroll (zooms toward the cursor), or use the −/⟲/+ buttons that appear on hover in the top-left corner. Click and drag to pan once zoomed in, or hold `Ctrl`/`Cmd` and drag at any zoom level (the cursor turns into a hand while the key is held, and text stops being selectable so a pan drag doesn't accidentally select text); the reset (⟲) button returns to the original 100% size and position.
 
+## Diagnostics
+
+Invalid config header values (an unrecognized key, an out-of-range `theme`,
+a non-numeric `width`/`height`/`padding`, a non-boolean `scene`) and DSL
+body errors are shown as squiggly underlines and Problems-panel entries,
+updated live as you edit — no need to open the preview.
+
 ## Explanation
 
 ### What is SchemaTex
