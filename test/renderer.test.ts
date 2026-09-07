@@ -143,6 +143,105 @@ test("does not re-process schematex's own rendered SVG, which also carries the s
   assert.equal(innerSvg?.hasAttribute("data-rendered"), false);
 });
 
+test("falls back to getDefaultTheme's result when the diagram has no explicit theme", () => {
+  const { document } = makeDiagramContainer("Genogram\n");
+  let receivedConfig: Record<string, unknown> | undefined;
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container, config) => {
+        receivedConfig = config as Record<string, unknown>;
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+      getDefaultTheme: () => "dark",
+    }),
+  );
+
+  renderer.renderAll(document);
+
+  assert.equal(receivedConfig?.theme, "dark");
+});
+
+test("an explicit per-diagram theme overrides getDefaultTheme's result", () => {
+  const { document } = makeDiagramContainer("Genogram\n", { theme: "monochrome" });
+  let receivedConfig: Record<string, unknown> | undefined;
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container, config) => {
+        receivedConfig = config as Record<string, unknown>;
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+      getDefaultTheme: () => "dark",
+    }),
+  );
+
+  renderer.renderAll(document);
+
+  assert.equal(receivedConfig?.theme, "monochrome");
+});
+
+test("reRenderAll re-renders a container even when already marked rendered", () => {
+  const { document, element } = makeDiagramContainer("Genogram\n");
+  element.setAttribute("data-rendered", "true");
+  let callCount = 0;
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container) => {
+        callCount++;
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+    }),
+  );
+
+  renderer.reRenderAll(document);
+
+  assert.equal(callCount, 1);
+  assert.equal(element.getAttribute("data-rendered"), "true");
+});
+
+test("does not default a decisiontree diagram to the dark theme, which renders illegible text against its hardcoded light node fills", () => {
+  const { document } = makeDiagramContainer('decisiontree "Laptop troubleshoot"\n  question "Q"\n');
+  let receivedConfig: Record<string, unknown> | undefined;
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container, config) => {
+        receivedConfig = config as Record<string, unknown>;
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+      getDefaultTheme: () => "dark",
+    }),
+  );
+
+  renderer.renderAll(document);
+
+  assert.notEqual(receivedConfig?.theme, "dark");
+});
+
+test("still honors an explicit dark theme on a decisiontree diagram", () => {
+  const { document } = makeDiagramContainer(
+    'decisiontree "Laptop troubleshoot"\n  question "Q"\n',
+    { theme: "dark" },
+  );
+  let receivedConfig: Record<string, unknown> | undefined;
+
+  const renderer = createRenderer(
+    noopDeps({
+      renderPreviewToContainer: (_text, container, config) => {
+        receivedConfig = config as Record<string, unknown>;
+        (container as HTMLElement).innerHTML = "<svg></svg>";
+      },
+      getDefaultTheme: () => "dark",
+    }),
+  );
+
+  renderer.renderAll(document);
+
+  assert.equal(receivedConfig?.theme, "dark");
+});
+
 test("shows an inline error card when decoding the container's attributes fails, and still marks rendered", () => {
   // renderPreviewToContainer throwing simulates a decode-time failure (e.g.
   // malformed base64/JSON in data-source/data-config), which is what

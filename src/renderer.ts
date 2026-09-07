@@ -1,4 +1,5 @@
 import { attachZoomPan } from "./zoomPan";
+import { hasDarkThemeContrastBug } from "./darkThemeContrastBugs";
 
 export interface RendererDeps {
   renderPreviewToContainer: (
@@ -6,6 +7,7 @@ export interface RendererDeps {
     container: Element,
     config?: Record<string, unknown>,
   ) => void;
+  getDefaultTheme?: () => string;
 }
 
 function decodeBase64Attribute(
@@ -59,6 +61,7 @@ function splitBackgroundColor(config: Record<string, unknown>): {
 export function createRenderer(deps: RendererDeps): {
   renderAll(root: ParentNode): void;
   renderOne(element: HTMLElement): void;
+  reRenderAll(root: ParentNode): void;
 } {
   function renderOne(element: HTMLElement): void {
     try {
@@ -73,7 +76,13 @@ export function createRenderer(deps: RendererDeps): {
         element.style.backgroundColor = backgroundColor;
       }
 
+      let defaultTheme = deps.getDefaultTheme?.();
+      if (defaultTheme === "dark" && hasDarkThemeContrastBug(source)) {
+        defaultTheme = undefined;
+      }
+
       deps.renderPreviewToContainer(source, element, {
+        theme: defaultTheme,
         ...schematexConfig,
         mode: "preview",
       });
@@ -114,5 +123,13 @@ export function createRenderer(deps: RendererDeps): {
       });
   }
 
-  return { renderAll, renderOne };
+  function reRenderAll(root: ParentNode): void {
+    root
+      .querySelectorAll('.schematex-diagram[data-source]')
+      .forEach((element) => {
+        renderOne(element as HTMLElement);
+      });
+  }
+
+  return { renderAll, renderOne, reRenderAll };
 }
