@@ -35,12 +35,17 @@ export function collectFenceDiagnostics(
         ? `${positionedMessage} ${diagnostic.hint}`
         : positionedMessage;
       const lineText = hasStructuredLine ? bodyLines[diagnostic.line! - 1] : undefined;
+      const line = Math.max(
+        0,
+        hasStructuredLine ? headerLineCount + (diagnostic.line! - 1) : headerLineCount,
+      );
+      const clampedStartColumn = Math.max(0, startColumn);
       return {
-        line: hasStructuredLine ? headerLineCount + (diagnostic.line! - 1) : headerLineCount,
-        startColumn,
+        line,
+        startColumn: clampedStartColumn,
         endColumn: Math.max(
-          startColumn + 1,
-          diagnostic.source?.length ?? lineText?.length ?? startColumn + 1,
+          clampedStartColumn + 1,
+          diagnostic.source?.length ?? lineText?.length ?? clampedStartColumn + 1,
         ),
         message,
         severity: diagnostic.severity,

@@ -176,3 +176,28 @@ test("skips body validation for a freshly-typed fence with no body yet, but stil
   assert.equal(diagnostics.length, 1);
   assert.match(diagnostics[0].message, /Invalid theme 'light'/);
 });
+
+test("clamps line and startColumn to non-negative when schematex reports column 0 and line 0 on a headerless fence", () => {
+  const fenceContent = "genogram\n  alice\n";
+  const fakeParseResult = () => ({
+    ok: true as const,
+    status: "partial" as const,
+    type: "genogram" as const,
+    ast: undefined,
+    diagnostics: [
+      {
+        severity: "error" as const,
+        message: "fabricated out-of-range position",
+        line: 0,
+        column: 0,
+      },
+    ],
+  });
+  const diagnostics = collectFenceDiagnostics(fenceContent, {
+    parseResult: fakeParseResult as unknown as typeof import("schematex").parseResult,
+  });
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].line, 0);
+  assert.equal(diagnostics[0].startColumn, 0);
+  assert.ok(diagnostics[0].endColumn > diagnostics[0].startColumn);
+});
