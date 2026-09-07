@@ -26,6 +26,10 @@ test("returns a body diagnostic offset past the header when the header is valid 
   assert.equal(diagnostics[0].line, 4);
   assert.equal(diagnostics[0].severity, "error");
   assert.match(diagnostics[0].message, /bogus-sex/);
+  // schematex returns column: 1 (1-indexed) and source: "  alice [bogus-sex]" (19 chars)
+  // So startColumn should be 0 (0-indexed) and endColumn should be 19
+  assert.equal(diagnostics[0].startColumn, 0);
+  assert.equal(diagnostics[0].endColumn, 19);
 });
 
 test("returns both header and body diagnostics when both are invalid", () => {
