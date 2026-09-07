@@ -1,0 +1,69 @@
+name: Publish to VS Code Marketplace
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - package.json
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Check if this version is already published
+        id: version_check
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "Tag v$VERSION already exists, skipping publish."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.version_check.outputs.skip == 'false'
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        if: steps.version_check.outputs.skip == 'false'
+        run: pnpm run typecheck
+
+      - name: Build
+        if: steps.version_check.outputs.skip == 'false'
+        run: pnpm run build
+
+      - name: Test
+        if: steps.version_check.outputs.skip == 'false'
+        run: pnpm run test
+
+      - name: Publish to VS Code Marketplace
+        if: steps.version_check.outputs.skip == 'false'
+        run: npx --no-install vsce publish --no-dependencies
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Tag the published version
+        if: steps.version_check.outputs.skip == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v${{ steps.version_check.outputs.version }}"
+          git push origin "v${{ steps.version_check.outputs.version }}"
