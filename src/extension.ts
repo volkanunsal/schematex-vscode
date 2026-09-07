@@ -98,15 +98,6 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument(refresh),
     vscode.workspace.onDidChangeTextDocument((event) => scheduleRefresh(event.document)),
-    // Belt-and-suspenders: onDidCloseTextDocument fires on TextDocument disposal,
-    // which is decoupled from "no editor tab shows this document anymore" and does
-    // not reliably fire on a user closing a tab. collection.delete is idempotent, so
-    // this is safe to keep, but the tabGroups listener below is what R7 relies on.
-    vscode.workspace.onDidCloseTextDocument((document) => {
-      if (!isUriStillVisible(document.uri)) {
-        clearForUri(document.uri);
-      }
-    }),
     vscode.window.tabGroups.onDidChangeTabs((event) => {
       for (const tab of event.closed) {
         for (const uri of urisOfTab(tab)) {

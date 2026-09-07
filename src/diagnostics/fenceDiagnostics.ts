@@ -1,19 +1,7 @@
 import { parseResult } from "schematex";
 import { parseConfigHeader } from "../config";
+import { logDiagnostic } from "./logger";
 import type { FenceDiagnostic } from "./types";
-
-function logDiagnostic(label: string, details: Record<string, unknown>): void {
-  const serialized = JSON.stringify(
-    details,
-    (_key, value) =>
-      value instanceof Error
-        ? { name: value.name, message: value.message, stack: value.stack }
-        : value,
-    2,
-  );
-  // eslint-disable-next-line no-console
-  console.error(`[schematex-vscode] ${label}\n${serialized}`);
-}
 
 function stripRelocatedPosition(message: string): string {
   return message

@@ -1,23 +1,11 @@
 import * as MarkdownItModule from "markdown-it";
 import { collectFenceDiagnostics } from "./fenceDiagnostics";
+import { logDiagnostic } from "./logger";
 import type { FenceDiagnostic } from "./types";
 
 export type MarkdownItInstance = ReturnType<typeof MarkdownItModule.default>;
 
 const defaultMarkdownIt = new MarkdownItModule.default();
-
-function logDiagnostic(label: string, details: Record<string, unknown>): void {
-  const serialized = JSON.stringify(
-    details,
-    (_key, value) =>
-      value instanceof Error
-        ? { name: value.name, message: value.message, stack: value.stack }
-        : value,
-    2,
-  );
-  // eslint-disable-next-line no-console
-  console.error(`[schematex-vscode] ${label}\n${serialized}`);
-}
 
 export function computeDocumentDiagnostics(
   text: string,
