@@ -37,7 +37,9 @@ genogram
 
 See [Configuration reference](#configuration-reference) below for the full list of supported keys.
 
-The DSL inside a `schematex` fence gets syntax highlighting while editing (comments, strings, numbers, diagram-type keywords, relationship operators, and attribute/config keys).
+The DSL inside a `schematex` fence gets syntax highlighting while editing (comments, strings, numbers, diagram-type keywords, body-level statement keywords like `table`, `participant`, or `category`, relationship operators, and attribute/config keys).
+
+See the [`examples/`](./examples) directory for a short, renderable sample of every supported diagram type — open any file's Markdown preview to see it rendered.
 
 Zoom with `Ctrl`/`Cmd`+scroll (zooms toward the cursor), or use the −/⟲/+ buttons that appear on hover in the top-left corner. Click and drag to pan once zoomed in, or hold `Ctrl`/`Cmd` and drag at any zoom level (the cursor turns into a hand while the key is held, and text stops being selectable so a pan drag doesn't accidentally select text); the reset (⟲) button returns to the original 100% size and position.
 

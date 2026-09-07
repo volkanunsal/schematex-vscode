@@ -3,13 +3,30 @@
   "name": "SchemaTex",
   "scopeName": "source.schematex",
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#config-header" },
-    { "include": "#diagram-type-keyword" },
-    { "include": "#strings" },
-    { "include": "#numbers" },
-    { "include": "#operators" },
-    { "include": "#brackets" }
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#config-header"
+    },
+    {
+      "include": "#diagram-type-keyword"
+    },
+    {
+      "include": "#statement-keyword"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#brackets"
+    }
   ],
   "repository": {
     "comments": {
@@ -31,29 +48,51 @@
     "config-header": {
       "begin": "^\\s*(---)\\s*$",
       "beginCaptures": {
-        "1": { "name": "punctuation.definition.block.schematex" }
+        "1": {
+          "name": "punctuation.definition.block.schematex"
+        }
       },
       "end": "^\\s*(---)\\s*$",
       "endCaptures": {
-        "1": { "name": "punctuation.definition.block.schematex" }
+        "1": {
+          "name": "punctuation.definition.block.schematex"
+        }
       },
       "name": "meta.embedded.block.config-header.schematex",
       "patterns": [
         {
           "match": "^\\s*([A-Za-z_][A-Za-z0-9_-]*)\\s*(:)",
           "captures": {
-            "1": { "name": "entity.name.tag.config-key.schematex" },
-            "2": { "name": "punctuation.separator.key-value.schematex" }
+            "1": {
+              "name": "entity.name.tag.config-key.schematex"
+            },
+            "2": {
+              "name": "punctuation.separator.key-value.schematex"
+            }
           }
         },
-        { "include": "#strings" },
-        { "include": "#numbers" }
+        {
+          "include": "#strings"
+        },
+        {
+          "include": "#numbers"
+        }
       ]
     },
     "diagram-type-keyword": {
-      "match": "^\\s*(block|blockdiagram|bowtie|bpmn|breadboard|causalloop|circuit|comparison|decisiontree|ecomap|entity|epc|erd|evacuation|eventtree|faulttree|fishbone|floorplan|flowchart|fmea|fbd|genogram|gitgraph|idef0|ladder|logic|markov|matrix|mindmap|network|orgchart|pid|pedigree|pert|petri|phylo|prisma|rbd|sfc|sld|siteplan|sociogram|playbook|stageplot|state|threatmodel|timeline|timing|umlclass|sequence|usecase|venn|welding)\\b",
+      "match": "^\\s*(block|blockdiagram|bowtie|bpmn|breadboard|causalloop|circuit|comparison|decisiontree|ecomap|entity-structure|entity|epc|erd|evacuation|eventtree|faulttree|fishbone|floorplan|flowchart|fmea|fbd|genogram|gitGraph|gitgraph|idef0|ladder|logic|markov|matrix|mindmap|network|orgchart|pid|pedigree|pert|petri|phylo|prisma|rbd|sfc|sld|siteplan|sociogram|playbook|stageplot|stateDiagram-v2|stateDiagram|state|threatmodel|timeline|timing|umlclass|sequence|usecase|venn|welding)\\b",
       "captures": {
-        "1": { "name": "keyword.control.diagram-type.schematex" }
+        "1": {
+          "name": "keyword.control.diagram-type.schematex"
+        }
+      }
+    },
+    "statement-keyword": {
+      "match": "^\\s*(absorbing|abstract|action|activate|actor|advisor|after|alt|analysis|and|answer|arc|arrow|assert|autonumber|barrier|baseline|basic|board|boundary|branch|branchLabels|branchLength|break|cable|calendar|category|cause|cell|chance|checkout|cherry-pick|choice|class|classDef|classes|clock|collections|cols|column|commit|compliance|composite|con|config|consequence|consider|control|controls|criterion|critical|critical-tolerance|cross|cut|data|database|databases|datastore|datatype|deactivate|decision|defense|destroy|det|detection|device|dhistory|dim|direction|door|draft|dribble|driveway|duration|easement|edgeStyle|effect|eligibility|else|end|entity|entropy|entry_point|equip|era|escalation|event|exit-final|exit_point|extend|external|extinguisher|feature|fence|field|final|fire|fire-door|firewall|fixture|flag|floor|flows|fn|fork|formation|frontage|func|function|furniture|gain|gate|gateway|generalization|gini|grid|group|handoff|hazard|here|highlight|history|hscale|hydrant|identification|ignore|impurity|included|initial|initiating|input|input-list|inputs|inst|interface|item|join|joint|junction|jurisdiction|kind|kofn|label|landscape|lane|layout|leaf|leaves|left|left-only|legend|level|linkStyle|loop|marking|measure|measures|mechanism|merge|milestone|mission|mitigate|mode|module|monitor|motion|mse|namespace|neg|net|network|newick|no|node|normalize|north|notation|note|number|occ|op|open|opening|opt|option|or|order|other|outcome|outgroup|output|output-list|outputs|owner|par|parallel|parcel|parents|parking|participant|parts|pass|payoff|place|points|pool|prevent|prevention|previous-studies|primitive|pro|process|progress|proxy|pull|quadrant|question|queue|rank|rating|ref|region|rel|revised|revision|right|right-only|road|roof|room|route|row|rows|rung|safety|samples|scale|screen|screening|seq|series|service|set|setback|sev|shared|sheet|shot|show-date|show-sentinels|signal|signal-paths|site|size|split|stage|start|status|step|storage|strict|structure|style|subgraph|subprocess|suppliers|switch|system|table|tags|tail|target|task|tax|tbh|technical-contact|terminate|theme|threat|threshold|tier|title|topevent|track|trail|trait|transfer|transition|tree|type|undeveloped|unit|usecase|utility|validate-counts|value|var|var_external|var_global|var_in_out|var_input|var_output|venue|view|voltage|walkway|wall|weight|well|what|width|window|wire|wires|x-axis|xor|y-axis|yes|zone)\\b",
+      "captures": {
+        "1": {
+          "name": "keyword.control.statement.schematex"
+        }
       }
     },
     "strings": {
@@ -79,7 +118,7 @@
         },
         {
           "name": "keyword.other.qualifier.schematex",
-          "match": "\\b(index|male|female|unknown|other|deceased|stillborn|miscarriage|abortion|PK|FK|UK|NN)\\b"
+          "match": "\\b(index|male|female|unknown-siblings|unknown|other|deceased|stillborn|miscarriage|abortion|adopted|foster|guardian|twin-identical|twin-fraternal|PK|FK|UK|NN)\\b"
         }
       ]
     },
@@ -89,17 +128,29 @@
           "name": "meta.attributes.schematex",
           "begin": "\\[",
           "beginCaptures": {
-            "0": { "name": "punctuation.definition.attributes.begin.schematex" }
+            "0": {
+              "name": "punctuation.definition.attributes.begin.schematex"
+            }
           },
           "end": "\\]",
           "endCaptures": {
-            "0": { "name": "punctuation.definition.attributes.end.schematex" }
+            "0": {
+              "name": "punctuation.definition.attributes.end.schematex"
+            }
           },
           "patterns": [
-            { "include": "#strings" },
-            { "include": "#numbers" },
-            { "include": "#operators" },
-            { "include": "#attribute-key" }
+            {
+              "include": "#strings"
+            },
+            {
+              "include": "#numbers"
+            },
+            {
+              "include": "#operators"
+            },
+            {
+              "include": "#attribute-key"
+            }
           ]
         },
         {
@@ -115,8 +166,12 @@
     "attribute-key": {
       "match": "\\b([A-Za-z_][A-Za-z0-9_-]*)\\s*(:)(?!:)",
       "captures": {
-        "1": { "name": "variable.parameter.schematex" },
-        "2": { "name": "punctuation.separator.key-value.schematex" }
+        "1": {
+          "name": "variable.parameter.schematex"
+        },
+        "2": {
+          "name": "punctuation.separator.key-value.schematex"
+        }
       }
     }
   }
