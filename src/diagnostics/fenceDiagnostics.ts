@@ -15,6 +15,13 @@ function logDiagnostic(label: string, details: Record<string, unknown>): void {
   console.error(`[schematex-vscode] ${label}\n${serialized}`);
 }
 
+function stripRelocatedPosition(message: string): string {
+  return message
+    .replace(/^Line \d+, col \d+:\s*/, "")
+    .replace(/^\[line \d+(?::\d+)?\]\s*/, "")
+    .split("\n  → ")[0];
+}
+
 export function collectFenceDiagnostics(
   fenceContent: string,
   deps: { parseResult: typeof parseResult } = { parseResult },
@@ -32,8 +39,8 @@ export function collectFenceDiagnostics(
       return {
         line: headerLineCount + ((diagnostic.line ?? 1) - 1),
         startColumn,
-        endColumn: startColumn + (diagnostic.source?.length ?? 1),
-        message: diagnostic.message,
+        endColumn: Math.max(startColumn + 1, diagnostic.source?.length ?? startColumn + 1),
+        message: stripRelocatedPosition(diagnostic.message),
         severity: diagnostic.severity,
       };
     });

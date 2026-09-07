@@ -40,6 +40,37 @@ test("returns both header and body diagnostics when both are invalid", () => {
   assert.match(diagnostics[1].message, /bogus-sex/);
 });
 
+test("does not run endColumn past the end of the line when schematex reports a column past 1", () => {
+  const errorLine = "  a -> b [bogus]";
+  const fenceContent = `flowchart\n${errorLine}\n`;
+  const diagnostics = collectFenceDiagnostics(fenceContent);
+  assert.equal(diagnostics.length, 1);
+  // Verified against real schematex output: it reports line 2, column 5,
+  // source "  a -> b [bogus]" (16 chars) for this input.
+  assert.equal(diagnostics[0].line, 1);
+  assert.equal(diagnostics[0].startColumn, 4);
+  assert.equal(diagnostics[0].endColumn, errorLine.length);
+  assert.ok(diagnostics[0].endColumn <= errorLine.length);
+  assert.ok(diagnostics[0].endColumn > diagnostics[0].startColumn);
+});
+
+test("strips the position prefix and source-echo suffix from a relocated body diagnostic message", () => {
+  const fenceContent = "---\ntheme: dark\n---\ngenogram\n  alice [bogus-sex]\n";
+  const diagnostics = collectFenceDiagnostics(fenceContent);
+  assert.equal(diagnostics.length, 1);
+  const { message } = diagnostics[0];
+  assert.ok(!message.startsWith("Line "), `message still carries a position prefix: ${message}`);
+  assert.ok(!message.startsWith("[line "), `message still carries a position prefix: ${message}`);
+  assert.ok(!message.includes("\n  →"), `message still carries a source echo: ${message}`);
+  assert.match(message, /^Unknown property 'bogus-sex'\./);
+});
+
+test("strips the bracketed position prefix schematex uses for parser errors", () => {
+  const diagnostics = collectFenceDiagnostics("flowchart\n  a -> b [bogus]\n");
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].message, 'expected edge operator, got "-> b [bogu"');
+});
+
 test("returns only header diagnostics when parseResult throws", () => {
   const fenceContent = "---\ntheme: light\n---\ngenogram\n  alice\n";
   const throwingParseResult = () => {

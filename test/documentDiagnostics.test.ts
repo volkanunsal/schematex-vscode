@@ -101,6 +101,76 @@ test("shifts the column of a header diagnostic to account for a fence indented i
   assert.equal(diagnostics[0].endColumn, 14);
 });
 
+test("produces identical coordinates for a CRLF document and its LF equivalent", () => {
+  const lines = [
+    "- item",
+    "  ```schematex",
+    "  ---",
+    "  theme: light",
+    "  ---",
+    "  genogram",
+    "  ```",
+    "",
+  ];
+  const lfDiagnostics = computeDocumentDiagnostics(lines.join("\n"));
+  const crlfDiagnostics = computeDocumentDiagnostics(lines.join("\r\n"));
+  assert.equal(lfDiagnostics.length, 1);
+  assert.deepEqual(crlfDiagnostics, lfDiagnostics);
+  assert.equal(crlfDiagnostics[0].line, 3);
+  assert.equal(crlfDiagnostics[0].startColumn, 9);
+  assert.equal(crlfDiagnostics[0].endColumn, 14);
+});
+
+test("offsets a DSL body diagnostic inside a fence indented in a list item", () => {
+  const lines = ["- item", "  ```schematex", "  flowchart", "  a -> b [bogus]", "  ```", ""];
+  const diagnostics = computeDocumentDiagnostics(lines.join("\n"));
+  assert.equal(diagnostics.length, 1);
+  // Raw line 3 is "  a -> b [bogus]" (16 chars). markdown-it strips the 2-space
+  // list indent, so the fence content line is "a -> b [bogus]" (14 chars) and
+  // schematex reports column 3 on it -> fence-relative startColumn 2, endColumn
+  // 14 (source length). Adding the 2-column indent gives 4 and 16.
+  assert.equal(diagnostics[0].line, 3);
+  assert.equal(diagnostics[0].startColumn, 4);
+  assert.equal(diagnostics[0].endColumn, 16);
+  assert.equal(diagnostics[0].endColumn, lines[3].length);
+  assert.equal(diagnostics[0].severity, "error");
+  assert.match(diagnostics[0].message, /expected edge operator/);
+});
+
+test("reports independently offset diagnostics for a header error and a body error in two fences", () => {
+  const lines = [
+    "# Title",
+    "",
+    "```schematex",
+    "---",
+    "theme: light",
+    "---",
+    "genogram",
+    "```",
+    "",
+    "Text.",
+    "",
+    "```schematex",
+    "flowchart",
+    "  a -> b [bogus]",
+    "```",
+    "",
+  ];
+  const diagnostics = computeDocumentDiagnostics(lines.join("\n"));
+  assert.equal(diagnostics.length, 2);
+
+  assert.equal(diagnostics[0].line, 4);
+  assert.equal(diagnostics[0].startColumn, 7);
+  assert.equal(diagnostics[0].endColumn, 12);
+  assert.match(diagnostics[0].message, /Invalid theme 'light'/);
+
+  assert.equal(diagnostics[1].line, 13);
+  assert.equal(diagnostics[1].startColumn, 4);
+  assert.equal(diagnostics[1].endColumn, 16);
+  assert.equal(diagnostics[1].endColumn, lines[13].length);
+  assert.match(diagnostics[1].message, /expected edge operator/);
+});
+
 test("shifts the column of a header diagnostic to account for a fence inside a blockquote", () => {
   const text = [
     "> quoted",

@@ -111,6 +111,24 @@ test("flags a non-numeric width value as an error covering the value", () => {
   ]);
 });
 
+test("flags an empty numeric value as an error rather than coercing it to 0", () => {
+  const raw = "---\nwidth:  \n---\nGenogram\n";
+  const { config, headerDiagnostics } = parseConfigHeader(raw);
+  assert.deepEqual(config, {});
+  assert.equal(headerDiagnostics.length, 1);
+  assert.equal(headerDiagnostics[0].severity, "error");
+  assert.equal(headerDiagnostics[0].message, "'width' must be a number, got ''.");
+});
+
+test("flags a non-finite numeric value as an error", () => {
+  const raw = "---\nwidth: Infinity\n---\nGenogram\n";
+  const { config, headerDiagnostics } = parseConfigHeader(raw);
+  assert.deepEqual(config, {});
+  assert.equal(headerDiagnostics.length, 1);
+  assert.equal(headerDiagnostics[0].severity, "error");
+  assert.equal(headerDiagnostics[0].message, "'width' must be a number, got 'Infinity'.");
+});
+
 test("flags a non-boolean scene value as an error covering the value", () => {
   const raw = "---\nscene: yes\n---\nGenogram\n";
   const { headerDiagnostics } = parseConfigHeader(raw);

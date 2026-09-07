@@ -7,6 +7,17 @@ type MarkdownItInstance = ReturnType<typeof MarkdownItModule.default>;
 
 const DEBOUNCE_MS = 300;
 
+function urisOfTab(tab: vscode.Tab): vscode.Uri[] {
+  const input = tab.input;
+  if (input instanceof vscode.TabInputText) {
+    return [input.uri];
+  }
+  if (input instanceof vscode.TabInputTextDiff) {
+    return [input.original, input.modified];
+  }
+  return [];
+}
+
 function isDiagnosableDocument(document: vscode.TextDocument): boolean {
   return (
     document.languageId === "markdown" &&
@@ -80,9 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
   function isUriStillVisible(uri: vscode.Uri): boolean {
     const key = uri.toString();
     return vscode.window.tabGroups.all.some((group) =>
-      group.tabs.some(
-        (tab) => tab.input instanceof vscode.TabInputText && tab.input.uri.toString() === key,
-      ),
+      group.tabs.some((tab) => urisOfTab(tab).some((tabUri) => tabUri.toString() === key)),
     );
   }
 
@@ -100,12 +109,10 @@ export function activate(context: vscode.ExtensionContext) {
     }),
     vscode.window.tabGroups.onDidChangeTabs((event) => {
       for (const tab of event.closed) {
-        if (!(tab.input instanceof vscode.TabInputText)) {
-          continue;
-        }
-        const uri = tab.input.uri;
-        if (!isUriStillVisible(uri)) {
-          clearForUri(uri);
+        for (const uri of urisOfTab(tab)) {
+          if (!isUriStillVisible(uri)) {
+            clearForUri(uri);
+          }
         }
       }
     }),

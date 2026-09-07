@@ -29,7 +29,7 @@ export function computeDocumentDiagnostics(
     return [];
   }
 
-  const rawLines = text.split("\n");
+  const rawLines = text.replace(/\r\n?/g, "\n").split("\n");
   const diagnostics: FenceDiagnostic[] = [];
   for (const token of tokens) {
     if (token.type !== "fence" || token.info.trim() !== "schematex" || !token.map) {

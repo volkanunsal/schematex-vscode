@@ -86,7 +86,7 @@ export function parseConfigHeader(raw: string): {
 
     if (numericKeys.has(key)) {
       const numericValue = Number(trimmedValue);
-      if (Number.isNaN(numericValue)) {
+      if (!Number.isFinite(numericValue) || trimmedValue === "") {
         headerDiagnostics.push({
           line: lineIndex,
           startColumn: valueStart,
