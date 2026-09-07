@@ -38,7 +38,7 @@ export function parseConfigHeader(raw: string): {
   headerDiagnostics: FenceDiagnostic[];
   headerLineCount: number;
 } {
-  const lines = raw.replace(/\r\n/g, "\n").split("\n");
+  const lines = raw.replace(/\r\n?/g, "\n").split("\n");
 
   if (lines[0]?.trim() !== "---") {
     return { config: {}, body: raw, headerDiagnostics: [], headerLineCount: 0 };

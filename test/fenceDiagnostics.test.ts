@@ -68,7 +68,85 @@ test("strips the position prefix and source-echo suffix from a relocated body di
 test("strips the bracketed position prefix schematex uses for parser errors", () => {
   const diagnostics = collectFenceDiagnostics("flowchart\n  a -> b [bogus]\n");
   assert.equal(diagnostics.length, 1);
-  assert.equal(diagnostics[0].message, 'expected edge operator, got "-> b [bogu"');
+  assert.ok(
+    diagnostics[0].message.startsWith('expected edge operator, got "-> b [bogu"'),
+    `unexpected message: ${diagnostics[0].message}`,
+  );
+});
+
+test("appends schematex's hint to the message when one is present", () => {
+  const diagnostics = collectFenceDiagnostics("flowchart\n  a -> b [bogus]\n");
+  assert.equal(diagnostics.length, 1);
+  // Verified against real schematex output for this input.
+  assert.equal(
+    diagnostics[0].message,
+    'expected edge operator, got "-> b [bogu" If this is label text, put it inside the ' +
+      'node shape and quote it, for example A["label with spaces (and parentheses)"].',
+  );
+});
+
+test('strips the "Line N:" position prefix that carries no column', () => {
+  // Verified against real schematex output: the timeline family reports
+  // { line: 2, message: "Line 2: Expected ':' after date: ..." } with no column.
+  const diagnostics = collectFenceDiagnostics("timeline\n  2020-13-45 Something happened\n");
+  assert.equal(diagnostics.length, 1);
+  assert.ok(
+    !diagnostics[0].message.startsWith("Line "),
+    `message still carries a position prefix: ${diagnostics[0].message}`,
+  );
+  assert.match(diagnostics[0].message, /^Expected ':' after date:/);
+});
+
+test("anchors a diagnostic with no structured position to the fence's first body line", () => {
+  // Verified against real schematex output: this circuit produces 5 diagnostics
+  // (1 CIRCUIT_DUPLICATE_ID error + 4 CIRCUIT_FLOATING_NET warnings), none of
+  // which carry line, column, or source.
+  const fenceContent = '---\ntheme: dark\n---\ncircuit "demo" netlist\n  R1 a b 1k\n  R1 c d 2k\n';
+  const diagnostics = collectFenceDiagnostics(fenceContent);
+  assert.equal(diagnostics.length, 5);
+  for (const diagnostic of diagnostics) {
+    assert.equal(diagnostic.line, 3);
+    assert.equal(diagnostic.startColumn, 0);
+    assert.equal(diagnostic.endColumn, 1);
+  }
+  assert.match(diagnostics[0].message, /^component id "R1" is declared 2 times/);
+  assert.match(diagnostics[0].message, /Rename the duplicates \(e\.g\. R1, R1B\)\./);
+});
+
+test("preserves a warning severity on a body diagnostic instead of forcing error", () => {
+  const fenceContent = 'circuit "demo" netlist\n  R1 a b 1k\n  R1 c d 2k\n';
+  const diagnostics = collectFenceDiagnostics(fenceContent);
+  assert.equal(diagnostics.length, 5);
+  assert.equal(diagnostics[0].severity, "error");
+  assert.deepEqual(
+    diagnostics.slice(1).map((diagnostic) => diagnostic.severity),
+    ["warning", "warning", "warning", "warning"],
+  );
+});
+
+test("keeps a message-embedded position when schematex reports no structured line", () => {
+  // Verified against real schematex output: this erd yields a single diagnostic
+  // whose message is "[line 2] Unexpected line: Customer" with line undefined,
+  // so the bracketed prefix is the only location information available.
+  const fenceContent = "erd\n  Customer\n    id int pk\n  Customer ||--o{ Bogus\n";
+  const diagnostics = collectFenceDiagnostics(fenceContent);
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].line, 0);
+  assert.equal(diagnostics[0].message, "[line 2] Unexpected line: Customer");
+});
+
+test("spans a positioned diagnostic to the end of its line when schematex reports no source", () => {
+  // Verified against real schematex output: the @overrides machine section emits
+  // PIN_INVALID with { severity: "warning", line: 4, column: 1 } and no source.
+  const errorLine = "  garbage line here";
+  const fenceContent = `genogram\n  alice\n@overrides\n${errorLine}\n`;
+  const diagnostics = collectFenceDiagnostics(fenceContent);
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].severity, "warning");
+  assert.equal(diagnostics[0].line, 3);
+  assert.equal(diagnostics[0].startColumn, 0);
+  assert.equal(diagnostics[0].endColumn, errorLine.length);
+  assert.notEqual(diagnostics[0].endColumn, diagnostics[0].startColumn + 1);
 });
 
 test("returns only header diagnostics when parseResult throws", () => {

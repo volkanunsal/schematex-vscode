@@ -17,7 +17,7 @@ function logDiagnostic(label: string, details: Record<string, unknown>): void {
 
 function stripRelocatedPosition(message: string): string {
   return message
-    .replace(/^Line \d+, col \d+:\s*/, "")
+    .replace(/^Line \d+(?:, col \d+)?:\s*/, "")
     .replace(/^\[line \d+(?::\d+)?\]\s*/, "")
     .split("\n  → ")[0];
 }
@@ -34,13 +34,27 @@ export function collectFenceDiagnostics(
 
   try {
     const result = deps.parseResult(body, config);
+    const bodyLines = body.split("\n");
     const bodyDiagnostics: FenceDiagnostic[] = result.diagnostics.map((diagnostic) => {
       const startColumn = (diagnostic.column ?? 1) - 1;
+      const hasStructuredLine = typeof diagnostic.line === "number";
+      // A diagnostic with no structured line may still carry its only location
+      // hint inside the message text, so that text is left intact.
+      const positionedMessage = hasStructuredLine
+        ? stripRelocatedPosition(diagnostic.message)
+        : diagnostic.message;
+      const message = diagnostic.hint
+        ? `${positionedMessage} ${diagnostic.hint}`
+        : positionedMessage;
+      const lineText = hasStructuredLine ? bodyLines[diagnostic.line! - 1] : undefined;
       return {
-        line: headerLineCount + ((diagnostic.line ?? 1) - 1),
+        line: hasStructuredLine ? headerLineCount + (diagnostic.line! - 1) : headerLineCount,
         startColumn,
-        endColumn: Math.max(startColumn + 1, diagnostic.source?.length ?? startColumn + 1),
-        message: stripRelocatedPosition(diagnostic.message),
+        endColumn: Math.max(
+          startColumn + 1,
+          diagnostic.source?.length ?? lineText?.length ?? startColumn + 1,
+        ),
+        message,
         severity: diagnostic.severity,
       };
     });

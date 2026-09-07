@@ -4,6 +4,8 @@ import type { FenceDiagnostic } from "./types";
 
 export type MarkdownItInstance = ReturnType<typeof MarkdownItModule.default>;
 
+const defaultMarkdownIt = new MarkdownItModule.default();
+
 function logDiagnostic(label: string, details: Record<string, unknown>): void {
   const serialized = JSON.stringify(
     details,
@@ -19,7 +21,7 @@ function logDiagnostic(label: string, details: Record<string, unknown>): void {
 
 export function computeDocumentDiagnostics(
   text: string,
-  deps: { markdownIt: MarkdownItInstance } = { markdownIt: new MarkdownItModule.default() },
+  deps: { markdownIt: MarkdownItInstance } = { markdownIt: defaultMarkdownIt },
 ): FenceDiagnostic[] {
   let tokens;
   try {

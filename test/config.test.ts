@@ -131,7 +131,7 @@ test("flags a non-finite numeric value as an error", () => {
 
 test("flags a non-boolean scene value as an error covering the value", () => {
   const raw = "---\nscene: yes\n---\nGenogram\n";
-  const { headerDiagnostics } = parseConfigHeader(raw);
+  const { config, headerDiagnostics } = parseConfigHeader(raw);
   assert.deepEqual(headerDiagnostics, [
     {
       line: 1,
@@ -141,6 +141,8 @@ test("flags a non-boolean scene value as an error covering the value", () => {
       severity: "error",
     },
   ]);
+  // Deliberately preserved coercion: anything not literally "true" becomes false.
+  assert.equal(config.scene, false);
 });
 
 test("reports no header diagnostics for a fully valid header", () => {
