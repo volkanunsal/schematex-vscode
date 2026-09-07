@@ -2,7 +2,7 @@
   "name": "schematex-vscode",
   "displayName": "SchemaTex Diagrams",
   "description": "Render SchemaTex diagrams inline in the VS Code Markdown preview",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publisher": "VolkanUnsal",
   "license": "AGPL-3.0-only",
   "icon": "media/icon.png",
