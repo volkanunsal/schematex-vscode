@@ -173,3 +173,23 @@ test("floors a degenerate empty value to a 1-column-wide range, not a zero-width
   assert.equal(headerDiagnostics[0].startColumn, 6);
   assert.equal(headerDiagnostics[0].endColumn, 7);
 });
+
+test("accepts scene: false without a diagnostic", () => {
+  const { config, headerDiagnostics } = parseConfigHeader("---\nscene: false\n---\nGenogram\n");
+  assert.deepEqual(config, { scene: false });
+  assert.deepEqual(headerDiagnostics, []);
+});
+
+test("parses a header with CRLF and lone CR line endings like LF", () => {
+  for (const raw of [
+    "---\r\ntheme: light\r\n---\r\nGenogram\r\n",
+    "---\rtheme: light\r---\rGenogram\r",
+  ]) {
+    const { headerLineCount, headerDiagnostics } = parseConfigHeader(raw);
+    assert.equal(headerLineCount, 3);
+    assert.equal(headerDiagnostics.length, 1);
+    assert.equal(headerDiagnostics[0].line, 1);
+    assert.equal(headerDiagnostics[0].startColumn, 7);
+    assert.equal(headerDiagnostics[0].endColumn, 12);
+  }
+});

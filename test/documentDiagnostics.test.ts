@@ -121,6 +121,25 @@ test("produces identical coordinates for a CRLF document and its LF equivalent",
   assert.equal(crlfDiagnostics[0].endColumn, 14);
 });
 
+test("produces identical coordinates for a lone-CR document and its LF equivalent", () => {
+  const lines = [
+    "- item",
+    "  ```schematex",
+    "  ---",
+    "  theme: light",
+    "  ---",
+    "  genogram",
+    "  ```",
+    "",
+  ];
+  const lfDiagnostics = computeDocumentDiagnostics(lines.join("\n"));
+  const crDiagnostics = computeDocumentDiagnostics(lines.join("\r"));
+  assert.equal(lfDiagnostics.length, 1);
+  assert.deepEqual(crDiagnostics, lfDiagnostics);
+  assert.equal(crDiagnostics[0].startColumn, 9);
+  assert.equal(crDiagnostics[0].endColumn, 14);
+});
+
 test("offsets a DSL body diagnostic inside a fence indented in a list item", () => {
   const lines = ["- item", "  ```schematex", "  flowchart", "  a -> b [bogus]", "  ```", ""];
   const diagnostics = computeDocumentDiagnostics(lines.join("\n"));
@@ -189,4 +208,19 @@ test("shifts the column of a header diagnostic to account for a fence inside a b
   // at raw column 9: "> theme: " is 9 characters.
   assert.equal(diagnostics[0].startColumn, 9);
   assert.equal(diagnostics[0].endColumn, 14);
+});
+
+test("validates a fence whose info string has trailing spaces", () => {
+  const text = "```schematex  \n---\ntheme: light\n---\ngenogram\n```\n";
+  const diagnostics = computeDocumentDiagnostics(text);
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].severity, "error");
+  assert.equal(diagnostics[0].line, 2);
+  assert.equal(diagnostics[0].startColumn, 7);
+  assert.equal(diagnostics[0].endColumn, 12);
+  assert.equal(
+    diagnostics[0].message,
+    "Invalid theme 'light'. Valid values: default, monochrome, dark.",
+  );
+  assert.deepEqual(diagnostics, computeDocumentDiagnostics(text.replace("  \n", "\n")));
 });
