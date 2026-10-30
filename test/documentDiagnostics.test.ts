@@ -190,3 +190,18 @@ test("shifts the column of a header diagnostic to account for a fence inside a b
   assert.equal(diagnostics[0].startColumn, 9);
   assert.equal(diagnostics[0].endColumn, 14);
 });
+
+test("validates a fence whose info string has trailing spaces", () => {
+  const text = "```schematex  \n---\ntheme: light\n---\ngenogram\n```\n";
+  const diagnostics = computeDocumentDiagnostics(text);
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].severity, "error");
+  assert.equal(diagnostics[0].line, 2);
+  assert.equal(diagnostics[0].startColumn, 7);
+  assert.equal(diagnostics[0].endColumn, 12);
+  assert.equal(
+    diagnostics[0].message,
+    "Invalid theme 'light'. Valid values: default, monochrome, dark.",
+  );
+  assert.deepEqual(diagnostics, computeDocumentDiagnostics(text.replace("  \n", "\n")));
+});
